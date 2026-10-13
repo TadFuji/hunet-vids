@@ -65,9 +65,12 @@ export async function mockGoogle(context: BrowserContext, override?: (call: Goog
 /** Fail the test if the page talks to any origin other than itself and (mocked) Google. */
 export function trackOrigins(page: Page, baseURL: string): string[] {
   const foreign: string[] = [];
+  const allowed = new Set([new URL(baseURL).origin, new URL(GOOGLE).origin]);
   page.on('request', (r) => {
     const u = r.url();
-    if (u.startsWith('data:') || u.startsWith('blob:') || u.startsWith(baseURL) || u.startsWith(GOOGLE)) return;
+    if (u.startsWith('data:') || u.startsWith('blob:')) return;
+    // compare exact origins: a prefix check would accept hosts like generativelanguage.googleapis.com.example
+    if (allowed.has(new URL(u).origin)) return;
     foreign.push(u);
   });
   return foreign;
