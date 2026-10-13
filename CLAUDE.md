@@ -40,7 +40,7 @@ Browser-only Google Vids clone. React 19 + Vite + TypeScript, one runtime depend
 
 ## Deployment
 
-- Vercel project `hunet-vids` (team "tadfuji's projects"). `vercel.json` sets build/output and security headers (CSP allowing only self + generativelanguage.googleapis.com; mediabunny needs `worker-src blob:`). Referrer-Policy is `strict-origin-when-cross-origin` so users can restrict their API key to the site's origin.
+- Production: https://hunet-vids.vercel.app — Vercel project `hunet-vids` (team "tadfuji's projects", scope `tadfujis-projects`). Deploy with `npx vercel@latest deploy --prod --scope tadfujis-projects` from this folder (the CLI is not installed globally; `.vercel/` holds the link and is git-ignored; `.vercelignore` keeps `.env*`, `live-output/`, `.claude/` out of uploads). Note `vercel link` writes a VERCEL_OIDC_TOKEN into `.env.local` (git-ignored). `vercel.json` sets build/output and security headers (CSP allowing only self + generativelanguage.googleapis.com; mediabunny needs `worker-src blob:`). Referrer-Policy is `strict-origin-when-cross-origin` so users can restrict their API key to the site's origin.
 
 ## Known issues / not verified
 
