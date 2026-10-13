@@ -58,6 +58,8 @@ npm run dev -- --port 5178
 
 API キーを守るため、AI Studio の API キー設定で「ウェブサイトの制限」に `https://hunet-vids.vercel.app/*` を指定しておくと、ほかのサイトではそのキーが使えなくなります。
 
+ソースコードは GitHub の非公開リポジトリ https://github.com/TadFuji/hunet-vids にあります。
+
 公開版を更新したいときは、Claude に「hunet-vids を更新して」と依頼してください。
 
 ## 注意
