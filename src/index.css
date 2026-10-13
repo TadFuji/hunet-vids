@@ -151,11 +151,21 @@ a { color: #8fb0ff; }
 .job { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; }
 
 @media (max-width: 900px) {
-  .editor { grid-template-rows: 48px auto auto; height: auto; }
+  .editor { grid-template-rows: auto auto auto; height: auto; }
+  .topbar { flex-wrap: wrap; padding: 6px 8px; gap: 6px; }
+  .topbar button { white-space: nowrap; }
+  .topbar .title-input { order: -1; flex-basis: 100%; max-width: none; }
+  .topbar .grow { display: none; }
   .workspace { grid-template-columns: 1fr; }
   .scenes { display: flex; gap: 8px; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--line); }
   .scene-item { min-width: 140px; }
   .canvas-wrap { height: 56vw; }
   .timeline { height: 200px; }
   .jobs { bottom: 16px; }
+}
+
+@media (max-width: 600px) {
+  .grid3 { grid-template-columns: 1fr; }
+  .brand, .home header button { white-space: nowrap; }
+  .home header { flex-wrap: wrap; }
 }
