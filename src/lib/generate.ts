@@ -14,7 +14,7 @@ export async function genNarration(g: Gemini, scene: Scene, signal?: AbortSignal
   const meta = await addAsset(blob, { name: `ナレーション: ${scene.title}`, source: 'tts', prompt: text });
   const duration = meta.duration ?? 0;
   return (s) => {
-    const next = { ...s, narration: { ...s.narration, assetId: meta.id, duration } };
+    const next = { ...s, narration: { ...s.narration, assetId: meta.id, duration, inVideo: false } };
     return { ...next, duration: Math.max(s.duration, minDurationFor(next)) };
   };
 }
@@ -55,6 +55,25 @@ export async function genVideo(g: Gemini, aspect: Aspect, scene: Scene, o: Video
     // narration usually carries the scene, so keep the AI clip's own audio quiet by default
     background: { kind: 'video', assetId: meta.id, fit: 'cover', trimStart: 0, volume: s.narration.text.trim() ? 0 : 0.8, loop: true },
     motion: 'none',
+  });
+}
+
+/**
+ * Avatar-style clip: a presenter speaks the scene's narration on camera.
+ * The clip's own audio replaces the TTS narration (the text is kept for captions).
+ */
+export async function genPresenter(g: Gemini, aspect: Aspect, scene: Scene, presenter: string, o: Omit<VideoOptions, 'fromImage'>, signal?: AbortSignal): Promise<SceneUpdate> {
+  const line = scene.narration.text.trim();
+  if (!line) throw new Error('ナレーションの文章が空です（人物が話すセリフになります）');
+  const prompt = `${presenter.trim() || 'A friendly presenter in a bright modern studio'}, medium shot, looking at the camera, natural gestures. The presenter clearly says: "${line}". No background music, no on-screen text.`;
+  const blob = await g.video(prompt, { aspect, resolution: o.resolution, seconds: o.seconds, signal, onWait: o.onWait });
+  const meta = await addAsset(blob, { name: `話す人物: ${scene.title}`, source: 'veo', prompt });
+  return (s) => ({
+    ...s,
+    background: { kind: 'video', assetId: meta.id, fit: 'cover', trimStart: 0, volume: 1, loop: false },
+    motion: 'none',
+    narration: { ...s.narration, assetId: null, inVideo: true, duration: meta.duration ? Math.max(0.5, meta.duration - 0.8) : null },
+    duration: Math.max(s.duration, Math.round((meta.duration ?? s.duration) * 10) / 10),
   });
 }
 

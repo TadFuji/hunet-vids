@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run --exclude 'src/**/*.live.test.ts'",
+    "test:live": "vitest run src/lib/gemini.live.test.ts"
   },
   "dependencies": {
     "mediabunny": "^1.61.4",

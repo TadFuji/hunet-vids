@@ -4,7 +4,7 @@ import { explainError, PRICES } from '../lib/gemini';
 import { makeScene, themeById, uid } from '../lib/model';
 import type { AssetMeta, Project, Scene } from '../lib/model';
 import { getProject, listAssets, saveProject } from '../lib/store';
-import { formatTime, layout, sceneAt } from '../lib/timeline';
+import { formatTime, layout, needsVoice, sceneAt } from '../lib/timeline';
 import { genImage, genMusic, genNarration, genVideo } from '../lib/generate';
 import { generateStoryboard, sceneFromStoryboard } from '../lib/storyboard';
 import type { EditorApi, JobFn } from './api';
@@ -135,7 +135,7 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
 
   const generateMissing = (p: Project, what: Partial<AutoGen>, musicPrompt?: string) => {
     for (const s of p.scenes) {
-      if (what.narration && s.narration.text.trim() && !s.narration.assetId) {
+      if (what.narration && needsVoice(s)) {
         runJob(`ナレーション: ${s.title}`, async (signal) => {
           updateScene(s.id, await genNarration(gemini, s, signal));
           refreshAssets();
@@ -250,7 +250,7 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
     });
   };
 
-  const missingVoice = project.scenes.filter((s) => s.narration.text.trim() && !s.narration.assetId).length;
+  const missingVoice = project.scenes.filter((s) => needsVoice(s)).length;
   const missingVisual = project.scenes.filter((s) => s.background.kind !== 'image' && s.background.kind !== 'video' && s.visualPrompt.trim());
   const visualCost = missingVisual.reduce((a, s) => a + (s.visualType === 'video' ? 8 * PRICES.videoPerSecond720 : PRICES.image1K), 0);
 

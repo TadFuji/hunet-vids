@@ -142,9 +142,11 @@ export function Player({ project, time, playing, onTime, onPlaying, selectedText
     const span = sceneAt(rp.spans, time);
     if (!span) return;
     const { x, y } = toNorm(e);
+    const px = x * rp.W;
+    const py = y * rp.H;
     const hit = [...span.scene.texts].reverse().find((t) => {
-      const b = textBox(t, 1, 1);
-      return x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
+      const b = textBox(t, rp.W, rp.H);
+      return px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h;
     });
     onSelectText(hit?.id ?? null);
     if (hit) {
@@ -173,10 +175,11 @@ export function Player({ project, time, playing, onTime, onPlaying, selectedText
   );
 }
 
-/** Approximate bounding box of a text item (normalized when W=H=1). */
+/** Approximate bounding box of a text item in canvas pixels (font size is relative to the short side). */
 function textBox(t: TextItem, W: number, H: number) {
   const lines = Math.max(1, t.text.split('\n').length);
-  const h = t.size * 1.3 * lines * H + t.size * H * 0.4;
+  const m = Math.min(W, H);
+  const h = t.size * 1.3 * lines * m + t.size * m * 0.4;
   const w = t.width * W;
   return { x: t.x * W - w / 2, y: t.y * H - h / 2, w, h };
 }

@@ -59,6 +59,7 @@ export interface Narration {
   style: string; // free-form delivery instruction, e.g. "calm and warm"
   assetId: string | null;
   duration: number | null;
+  inVideo?: boolean; // spoken by a person in the background clip, so no TTS audio is needed
 }
 
 export interface Scene {

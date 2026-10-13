@@ -99,10 +99,10 @@ export function sceneFromStoryboard(s: StoryboardScene, p: Project, voice: strin
   const portrait = p.aspect === '9:16';
   const texts = [];
   if (s.headline.trim()) {
-    texts.push(makeText(theme, { text: s.headline.trim(), y: portrait ? 0.3 : 0.4, size: portrait ? 0.05 : 0.08, width: 0.86, weight: 900 }));
+    texts.push(makeText(theme, { text: s.headline.trim(), y: portrait ? 0.3 : 0.4, size: 0.08, width: 0.86, weight: 900 }));
   }
   if (s.subtext.trim()) {
-    texts.push(makeText(theme, { text: s.subtext.trim(), y: portrait ? 0.38 : 0.55, size: portrait ? 0.03 : 0.045, color: theme.bodyColor, weight: 400, anim: 'fade', start: 0.4 }));
+    texts.push(makeText(theme, { text: s.subtext.trim(), y: portrait ? 0.4 : 0.55, size: 0.045, color: theme.bodyColor, weight: 400, anim: 'fade', start: 0.4 }));
   }
   return makeScene(theme, {
     title: s.title,

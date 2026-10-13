@@ -4,8 +4,8 @@ import type { EditorApi } from './api';
 import { PRICES, VOICES } from '../lib/gemini';
 import { makeText, themeById } from '../lib/model';
 import type { Background, Motion, Scene, TextAnim, TextItem, Transition } from '../lib/model';
-import { editImage, genImage, genNarration, genVideo } from '../lib/generate';
-import { minDurationFor } from '../lib/timeline';
+import { editImage, genImage, genNarration, genPresenter, genVideo } from '../lib/generate';
+import { minDurationFor, needsVoice } from '../lib/timeline';
 import { rewrite } from '../lib/storyboard';
 import { assetUrl } from '../lib/media';
 
@@ -39,6 +39,7 @@ export function ScenePanel({ api }: { api: EditorApi }) {
   const [res, setRes] = useState<'720p' | '1080p'>('720p');
   const [fromImage, setFromImage] = useState(true);
   const [editPrompt, setEditPrompt] = useState('');
+  const [presenter, setPresenter] = useState('');
   if (!scene) return <p className="muted">シーンを選んでください。</p>;
   const up = (fn: (s: Scene) => Scene) => api.updateScene(scene.id, fn);
   const set = (p: Partial<Scene>) => up((s) => ({ ...s, ...p }));
@@ -48,6 +49,7 @@ export function ScenePanel({ api }: { api: EditorApi }) {
   const imgLabel = `画像生成: ${scene.title}`;
   const vidLabel = `動画生成: ${scene.title}`;
   const editLabel = `画像編集: ${scene.title}`;
+  const presLabel = `人物動画: ${scene.title}`;
   const videoCost = secs * PRICES.videoPerSecond720 * (res === '1080p' ? 1.5 : 1);
   const square = project.aspect === '1:1';
 
@@ -234,6 +236,34 @@ export function ScenePanel({ api }: { api: EditorApi }) {
       </div>
 
       <div className="section">
+        <h3>人物が話す動画（アバター風）</h3>
+        <p className="small-text muted">「音声」タブの文章を、動画の中の人物がセリフとして話します。生成後はナレーション音声の代わりに動画の声を使います。日本語のセリフは英語より不自然になることがあります。</p>
+        <label>人物と場所の説明（英語がおすすめ）</label>
+        <input value={presenter} onChange={(e) => setPresenter(e.target.value)} placeholder="例: a Japanese woman in her 30s in a bright office" />
+        <button
+          style={{ marginTop: 8 }}
+          disabled={!scene.narration.text.trim() || api.isBusy(presLabel)}
+          onClick={() =>
+            api.runJob(presLabel, async (signal, progress) => {
+              const fn = await genPresenter(api.gemini, project.aspect, scene, presenter, { seconds: secs, resolution: res, onWait: (s) => progress(`生成中… ${s} 秒経過`) }, signal);
+              api.updateScene(scene.id, fn);
+              api.refreshAssets();
+            })
+          }
+        >
+          {api.isBusy(presLabel) && <span className="busy" />}話す人物の動画を生成（約${videoCost.toFixed(2)}）
+        </button>
+        {scene.narration.inVideo && (
+          <div className="small-text" style={{ marginTop: 8 }}>
+            このシーンは動画の人物の声を使っています。{' '}
+            <button className="small" onClick={() => set({ narration: { ...scene.narration, inVideo: false } })}>
+              ナレーション音声に戻す
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="section">
         <label>メモ</label>
         <textarea rows={2} value={scene.notes} onChange={(e) => set({ notes: e.target.value })} />
       </div>
@@ -255,7 +285,6 @@ export function TextPanel({ api }: { api: EditorApi }) {
   const { scene, project } = api;
   if (!scene) return <p className="muted">シーンを選んでください。</p>;
   const theme = themeById(project.themeId);
-  const portrait = project.aspect === '9:16';
   const setTexts = (fn: (t: TextItem[]) => TextItem[]) => api.updateScene(scene.id, (s) => ({ ...s, texts: fn(s.texts) }));
   const setItem = (id: string, p: Partial<TextItem>) => setTexts((ts) => ts.map((t) => (t.id === id ? { ...t, ...p } : t)));
   const add = (p: Partial<TextItem>) => {
@@ -267,10 +296,10 @@ export function TextPanel({ api }: { api: EditorApi }) {
   return (
     <>
       <div className="row wrap">
-        <button className="small" onClick={() => add({ text: '見出し', size: portrait ? 0.05 : 0.08, weight: 900, y: 0.4 })}>
+        <button className="small" onClick={() => add({ text: '見出し', size: 0.08, weight: 900, y: 0.4 })}>
           ＋ 見出し
         </button>
-        <button className="small" onClick={() => add({ text: '本文テキスト', size: portrait ? 0.03 : 0.045, weight: 400, color: theme.bodyColor, y: 0.58, anim: 'fade' })}>
+        <button className="small" onClick={() => add({ text: '本文テキスト', size: 0.045, weight: 400, color: theme.bodyColor, y: 0.58, anim: 'fade' })}>
           ＋ 本文
         </button>
         <button className="small" onClick={() => add({ text: 'ラベル', size: 0.035, weight: 700, bg: theme.accent, color: '#ffffff', y: 0.15, x: 0.5, shadow: false, anim: 'pop' })}>
@@ -380,7 +409,7 @@ export function VoicePanel({ api }: { api: EditorApi }) {
       const text = await rewrite(api.gemini, n.text, instruction, signal);
       api.updateScene(scene.id, (s) => ({ ...s, narration: { ...s.narration, text, assetId: null, duration: null } }));
     });
-  const missing = project.scenes.filter((s) => s.narration.text.trim() && !s.narration.assetId);
+  const missing = project.scenes.filter((s) => needsVoice(s));
 
   return (
     <>

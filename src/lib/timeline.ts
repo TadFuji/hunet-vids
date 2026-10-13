@@ -33,6 +33,9 @@ export function minDurationFor(scene: Scene): number {
   return n ? Math.ceil((n + NARRATION_LEAD + NARRATION_TAIL) * 10) / 10 : 1;
 }
 
+/** Scene has narration text but no voice audio yet. */
+export const needsVoice = (s: Scene) => !!s.narration.text.trim() && !s.narration.assetId && !s.narration.inVideo;
+
 export interface Cue {
   start: number;
   end: number;

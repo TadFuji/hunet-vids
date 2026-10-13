@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { Project } from '../lib/model';
 import { ASPECT_SIZES } from '../lib/model';
 import { exportMp4 } from '../lib/exporter';
-import { captionCues, formatTime, layout, toSrt } from '../lib/timeline';
+import { captionCues, formatTime, layout, needsVoice, toSrt } from '../lib/timeline';
 import { download } from './download';
 
 export function ExportDialog({ project, onClose }: { project: Project; onClose: () => void }) {
@@ -15,7 +15,7 @@ export function ExportDialog({ project, onClose }: { project: Project; onClose: 
   const { w, h } = ASPECT_SIZES[project.aspect];
   const scale = quality === '1080' ? 1 : 2 / 3;
   const total = layout(project).total;
-  const missingVoice = project.scenes.filter((s) => s.narration.text.trim() && !s.narration.assetId).length;
+  const missingVoice = project.scenes.filter((s) => needsVoice(s)).length;
 
   const run = async () => {
     setError('');

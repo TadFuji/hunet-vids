@@ -114,7 +114,7 @@ export function drawText(ctx: CanvasRenderingContext2D, W: number, H: number, t:
   alpha *= outP;
   if (alpha <= 0 || !text) return;
 
-  const px = Math.round(t.size * H);
+  const px = Math.round(t.size * Math.min(W, H));
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.font = `${t.weight} ${px}px ${t.font}`;
@@ -159,7 +159,7 @@ function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, scene: S
 
 function drawCaption(ctx: CanvasRenderingContext2D, W: number, H: number, project: Project, cue: Cue) {
   const c = project.captions;
-  const px = Math.round(c.size * H);
+  const px = Math.round(c.size * Math.min(W, H));
   ctx.save();
   ctx.font = `700 ${px}px ${themeById(project.themeId).font}`;
   ctx.textAlign = 'center';
