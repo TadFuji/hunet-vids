@@ -21,7 +21,7 @@ export const MODELS = {
 // Rough public list prices (USD), for the cost hints shown in the UI.
 export const PRICES = {
   videoPerSecond720: 0.1,
-  image1K: 0.034,
+  image2K: 0.05, // we request 2K images from gemini-nano-banana-2.1
   musicClip: 0.04,
   musicSong: 0.08,
 };
@@ -122,16 +122,26 @@ export class Gemini {
       try {
         it = await this.request<Interaction>('POST', '/interactions', { ...body, background: true }, opts.signal);
       } catch (e) {
-        // fall back to a synchronous call if background mode is rejected
-        if (e instanceof GeminiError && e.status === 400 && /background/i.test(e.message)) it = await this.request<Interaction>('POST', '/interactions', body, opts.signal);
+        // Background mode is documented only for text models. A rejected POST (400) creates no job,
+        // so retrying once synchronously cannot double-charge.
+        if (e instanceof GeminiError && e.status === 400) it = await this.request<Interaction>('POST', '/interactions', body, opts.signal);
         else throw e;
       }
-      const started = Date.now();
-      while (it.status && it.status !== 'completed' && it.id) {
-        if (/fail|cancel|error/i.test(it.status)) break;
-        await sleep(4000, opts.signal);
-        opts.onWait?.(Math.round((Date.now() - started) / 1000));
-        it = await this.request<Interaction>('GET', `/interactions/${encodeURIComponent(it.id)}`, undefined, opts.signal);
+      const id = it.id;
+      // Aborting must also cancel the job on Google's side, otherwise it keeps running (and billing).
+      const cancel = () => {
+        if (id) this.request('POST', `/interactions/${encodeURIComponent(id)}/cancel`).catch(() => {});
+      };
+      opts.signal?.addEventListener('abort', cancel);
+      try {
+        const started = Date.now();
+        while (id && (it.status === 'in_progress' || it.status === 'queued')) {
+          await sleep(4000, opts.signal);
+          opts.onWait?.(Math.round((Date.now() - started) / 1000));
+          it = await this.request<Interaction>('GET', `/interactions/${encodeURIComponent(id)}`, undefined, opts.signal);
+        }
+      } finally {
+        opts.signal?.removeEventListener('abort', cancel);
       }
     } else {
       it = await this.request<Interaction>('POST', '/interactions', body, opts.signal);
@@ -206,7 +216,8 @@ export class Gemini {
     const input: unknown[] = [];
     for (const f of [o.firstFrame, o.lastFrame]) if (f) input.push({ type: 'image', mime_type: f.type || 'image/jpeg', data: await blobToBase64(f) });
     input.push({ type: 'text', text: prompt });
-    const format: Record<string, unknown> = { type: 'video', aspect_ratio: o.aspect === '9:16' ? '9:16' : '16:9', resolution: o.resolution };
+    // videos over ~4MB are only returned by uri (omni guide); download() handles both forms
+    const format: Record<string, unknown> = { type: 'video', aspect_ratio: o.aspect === '9:16' ? '9:16' : '16:9', resolution: o.resolution, delivery: 'uri' };
     if (o.seconds) format.duration = `${o.seconds}s`;
     const body = { model: MODELS.video, input: input.length === 1 ? prompt : input, response_format: format };
     let blocks: Block[];
@@ -233,7 +244,7 @@ export class Gemini {
 
   /** Download a Files API file (used when the API answers with a uri instead of inline data). */
   async download(uri: string, signal?: AbortSignal): Promise<Uint8Array> {
-    const name = /files\/[^/:?]+/.exec(uri)?.[0];
+    const name = /^https:\/\/generativelanguage\.googleapis\.com\/(?:v1beta\/)?(files\/[A-Za-z0-9_-]+)/.exec(uri)?.[1] ?? /^(files\/[A-Za-z0-9_-]+)$/.exec(uri)?.[1];
     if (name) {
       for (let i = 0; i < 60; i++) {
         const f = await this.request<{ state?: string }>('GET', `/${name}`, undefined, signal);
@@ -242,8 +253,9 @@ export class Gemini {
         await sleep(3000, signal);
       }
     }
-    const url = name ? `${BASE}/${name}:download?alt=media` : uri;
-    const res = await fetch(url, { headers: { 'x-goog-api-key': this.key }, signal });
+    // Only ever send the key to Google's Files API, whatever the response says.
+    if (!name) throw new GeminiError('生成結果の取得先が想定外のため、ダウンロードを中止しました', 500);
+    const res = await fetch(`${BASE}/${name}:download?alt=media`, { headers: { 'x-goog-api-key': this.key }, signal });
     if (!res.ok) throw new GeminiError(`ダウンロードに失敗しました（${res.statusText}）`, res.status);
     return new Uint8Array(await res.arrayBuffer());
   }

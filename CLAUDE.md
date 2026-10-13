@@ -5,7 +5,7 @@ Browser-only Google Vids clone. React 19 + Vite + TypeScript, one runtime depend
 ## Commands
 
 - `npm run dev -- --port 5178` — dev server (`.claude/launch.json` entry "my-vids")
-- `npm test` — unit tests (timeline, captions, WAV)
+- `npm test` — unit tests (timeline, captions, WAV, API client with mocked fetch)
 - `npm run test:live` — real API checks; reads `GEMINI_API_KEY` from env or `.env.local` (git-ignored). Free checks only by default; `LIVE_PAID=image,music,video` adds paid ones. Outputs go to `live-output/` (git-ignored).
 - `npm run build` — type-check + production build into `dist/`
 - Browser check without a key: choose "キーなしで体験する" (key = `demo` → `MockGemini` in `src/lib/mock.ts` produces placeholder media locally).
@@ -27,7 +27,9 @@ Browser-only Google Vids clone. React 19 + Vite + TypeScript, one runtime depend
 
 ## Design decisions
 
-- Gemini **Interactions API** (`POST /v1beta/interactions`) is used for everything; it is Google's primary API as of 2026-10. Long jobs (image/video/music) send `background: true` and poll `GET /v1beta/interactions/{id}`; falls back to a synchronous call if `background` is rejected.
+- Gemini **Interactions API** (`POST /v1beta/interactions`) is used for everything; it is Google's primary API as of 2026-10. Long jobs (image/video/music) send `background: true` and poll `GET /v1beta/interactions/{id}`; any 400 on the background POST retries once synchronously (a rejected POST creates no job, so no double charge). Background mode is documented only for text models, so whether Omni/Nano Banana/Lyria accept it is unverified. Aborting a job also calls `POST /interactions/{id}/cancel` so Google stops billing. Polling continues only while status is `in_progress`/`queued`.
+- `Editor.runJob` ignores a job whose label is already running (prevents duplicate paid generations).
+- `Gemini.download` only accepts `files/...` URIs on generativelanguage.googleapis.com, so the key can never be sent elsewhere. Video uses `delivery: 'uri'` (inline is limited to ~4MB).
 - Video model is `gemini-omni-1.1-flash` (Veo 3.1 shuts down 2026-10-22; Imagen 4 already shut down). Omni supports only 16:9 / 9:16, so 1:1 projects use 16:9 + cover crop.
 - Plain `fetch`, not `@google/genai`: an SDK version added an `Api-Revision` header that breaks browser CORS (js-genai issue #1723).
 - Narration audio drives scene length (`minDurationFor`); captions are derived from narration text, timed proportionally by characters.

@@ -80,7 +80,7 @@ export function Home({ gemini, demo, onSettings }: { gemini: Gemini; demo: boole
   // rough upper bound for paid generation, shown before creating
   const scenesGuess = Math.max(1, Math.round(brief.seconds / 6));
   const videoScenes = brief.visual === 'video' ? scenesGuess : brief.visual === 'mixed' ? Math.min(3, scenesGuess) : 0;
-  const estimate = (auto.visuals ? videoScenes * 8 * PRICES.videoPerSecond720 + (scenesGuess - videoScenes) * PRICES.image1K : 0) + (auto.music ? PRICES.musicClip : 0);
+  const estimate = (auto.visuals ? videoScenes * 8 * PRICES.videoPerSecond720 + (scenesGuess - videoScenes) * PRICES.image2K : 0) + (auto.music ? PRICES.musicClip : 0);
 
   return (
     <div className="home">

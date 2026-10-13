@@ -50,7 +50,7 @@ export function ScenePanel({ api }: { api: EditorApi }) {
   const vidLabel = `動画生成: ${scene.title}`;
   const editLabel = `画像編集: ${scene.title}`;
   const presLabel = `人物動画: ${scene.title}`;
-  const videoCost = secs * PRICES.videoPerSecond720 * (res === '1080p' ? 1.5 : 1);
+  const videoCost = secs * PRICES.videoPerSecond720; // 1080p is upscaled; Google lists only the 720p rate
   const square = project.aspect === '1:1';
 
   return (
@@ -168,7 +168,7 @@ export function ScenePanel({ api }: { api: EditorApi }) {
               })
             }
           >
-            {api.isBusy(imgLabel) && <span className="busy" />}画像を生成（約${PRICES.image1K.toFixed(2)}）
+            {api.isBusy(imgLabel) && <span className="busy" />}画像を生成（約${PRICES.image2K.toFixed(2)}）
           </button>
         </div>
         <div className="grid3">
@@ -211,7 +211,7 @@ export function ScenePanel({ api }: { api: EditorApi }) {
           {api.isBusy(vidLabel) && <span className="busy" />}音声つき動画を生成（約${videoCost.toFixed(2)}）
         </button>
         <p className="small-text muted">
-          動画は Gemini Omni で生成します（1〜数分かかります）。セリフや効果音も説明に書けば入ります。{square && '正方形の動画は 16:9 で生成して中央を切り抜きます。'}
+          動画は Gemini Omni で生成します（1〜数分かかります）。セリフや効果音も説明に書けば入ります。長さの指定は目安で、実際の長さと費用は前後することがあります。1080p の料金は Google が公表していないため、720p の料金で表示しています。{square && '正方形の動画は 16:9 で生成して中央を切り抜きます。'}
         </p>
         {bg.kind === 'image' && (
           <>

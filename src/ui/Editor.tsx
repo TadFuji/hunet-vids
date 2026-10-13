@@ -108,11 +108,16 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
     setProject(next);
   };
 
+  // labels of jobs in flight; a second request with the same label is ignored (prevents double-charging)
+  const running = useRef(new Set<string>());
   const runJob = useCallback((label: string, fn: JobFn) => {
+    if (running.current.has(label)) return;
+    running.current.add(label);
     const job: Job = { id: uid(), label, status: 'running', detail: '', abort: new AbortController() };
     setJobs((js) => [...js, job]);
     const patch = (p: Partial<Job>) => setJobs((js) => js.map((j) => (j.id === job.id ? { ...j, ...p } : j)));
     fn(job.abort.signal, (detail) => patch({ detail }))
+      .finally(() => running.current.delete(label))
       .then(() => {
         patch({ status: 'done', detail: '完了' });
         setTimeout(() => setJobs((js) => js.filter((j) => j.id !== job.id)), 2500);
@@ -252,7 +257,7 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
 
   const missingVoice = project.scenes.filter((s) => needsVoice(s)).length;
   const missingVisual = project.scenes.filter((s) => s.background.kind !== 'image' && s.background.kind !== 'video' && s.visualPrompt.trim());
-  const visualCost = missingVisual.reduce((a, s) => a + (s.visualType === 'video' ? 8 * PRICES.videoPerSecond720 : PRICES.image1K), 0);
+  const visualCost = missingVisual.reduce((a, s) => a + (s.visualType === 'video' ? 8 * PRICES.videoPerSecond720 : PRICES.image2K), 0);
 
   return (
     <div className="editor">
