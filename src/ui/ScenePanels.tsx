@@ -195,7 +195,7 @@ export function ScenePanel({ api }: { api: EditorApi }) {
           </div>
           <div>
             <label>&nbsp;</label>
-            <label className="row small-text" style={{ margin: 0 }} title="いまの背景画像を最初のコマにして動かします">
+            <label className="row small-text" style={{ margin: 0 }} title="いまの背景画像を最初のコマにして動かします（画像は Google の AI に送られます）">
               <input type="checkbox" disabled={bg.kind !== 'image'} checked={fromImage && bg.kind === 'image'} onChange={(e) => setFromImage(e.target.checked)} />
               画像を動かす
             </label>
@@ -219,7 +219,7 @@ export function ScenePanel({ api }: { api: EditorApi }) {
         </p>
         {bg.kind === 'image' && (
           <>
-            <label>いまの画像を指示で編集（例: 背景を消して白に / 夜の景色に / 人物を笑顔に）</label>
+            <label>いまの画像を指示で編集（例: 背景を消して白に / 夜の景色に / 人物を笑顔に）。画像は Google の AI に送られます</label>
             <div className="row">
               <input className="grow" value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} />
               <button
