@@ -106,6 +106,9 @@ export function Home({ gemini, demo, onSettings }: { gemini: Gemini; demo: boole
             }}
           />
         </label>
+        <a className="link-button" href="/guide.pdf" target="_blank" rel="noopener">
+          使い方（PDF）
+        </a>
         <button onClick={onSettings}>API キー設定</button>
       </header>
 
@@ -123,7 +126,7 @@ export function Home({ gemini, demo, onSettings }: { gemini: Gemini; demo: boole
           <summary className="muted small-text" style={{ cursor: 'pointer' }}>
             参考資料を追加（文章を貼り付け、または .txt / .md ファイル）
           </summary>
-          <textarea rows={5} value={brief.reference} placeholder="この資料の内容をもとに動画を作ります" onChange={(e) => set({ reference: e.target.value })} />
+          <textarea rows={5} value={brief.reference} placeholder="この資料の内容をもとに動画を作ります（資料の文章は Google の AI に送られます）" onChange={(e) => set({ reference: e.target.value })} />
           <input type="file" accept=".txt,.md,.csv,.json,text/*" onChange={(e) => readFile(e.target.files?.[0])} style={{ marginTop: 6 }} />
         </details>
 

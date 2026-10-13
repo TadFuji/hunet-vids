@@ -24,6 +24,7 @@ const types = {
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
   '.json': 'application/json',
+  '.pdf': 'application/pdf',
 };
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

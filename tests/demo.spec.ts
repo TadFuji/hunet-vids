@@ -47,3 +47,20 @@ test('a broken backup file is rejected with a message instead of breaking the ap
   await expect(page.getByText('ファイルが壊れているか、hunet vids のプロジェクトファイルではありません')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'どんな動画を作りますか？' })).toBeVisible();
 });
+
+test('switching a presenter scene back to narration mutes the clip so voices are not doubled', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'キーなしで体験する' }).click();
+  await page.getByPlaceholder(/新入社員向けに/).fill('人物動画のテスト');
+  await page.getByRole('button', { name: 'AI で絵コンテを作成' }).click();
+  await expect(page.getByRole('button', { name: /ナレーションを一括生成（0）/ })).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.job .busy')).toHaveCount(0, { timeout: 30_000 });
+
+  await page.getByRole('button', { name: /話す人物の動画を生成/ }).click();
+  await expect(page.getByText('このシーンは動画の人物の声を使っています。')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText('動画の音量 100%')).toBeVisible();
+
+  await page.getByRole('button', { name: 'ナレーション音声に戻す' }).click();
+  await expect(page.getByText('動画の音量 0%')).toBeVisible();
+  await expect(page.getByRole('button', { name: /ナレーションを一括生成（1）/ })).toBeVisible();
+});

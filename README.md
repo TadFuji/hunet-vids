@@ -5,7 +5,7 @@
 
 Google Vids のように、指示文から動画を作るブラウザアプリです。台本（絵コンテ）、ナレーション、背景の画像・動画、BGM を Gemini API で生成し、ブラウザの中で編集して MP4 に書き出します。利用者は各自の Gemini API キーを使います（BYOK）。サーバーは持たず、キー・動画・素材はその人のブラウザの中だけに保存されます。**書き出した動画に目に見える透かしは入りません。**
 
-**公開アプリ:** https://hunet-vids.vercel.app ・ **安全設計:** [docs/security.md](docs/security.md) ・ **検証記録:** [docs/validation.md](docs/validation.md)
+**公開アプリ:** https://hunet-vids.vercel.app ・ **図解取扱説明書:** [PDF](output/pdf/hunet_vids_図解取扱説明書.pdf) ・ **安全設計:** [docs/security.md](docs/security.md) ・ **検証記録:** [docs/validation.md](docs/validation.md)
 
 ![編集画面（体験モード）](docs/screenshots/editor.png)
 
@@ -64,7 +64,8 @@ npm start
 
 - API キーはこのブラウザの保存領域（localStorage）に保存し、Gemini API（`generativelanguage.googleapis.com`）へ `x-goog-api-key` ヘッダーとしてだけ送ります。設定画面の「キーを削除」で消せます。共有のパソコンでは使い終わったら削除してください。
 - 公開サイトは、通信できる外部の宛先を Gemini API だけに制限しています（Content-Security-Policy）。
-- 動画・素材・プロジェクトはブラウザの IndexedDB に保存され、どこにもアップロードされません。ブラウザのサイトデータを消すと消えるため、大事なプロジェクトは一覧画面の「ファイルに保存」でバックアップしてください。
+- 動画・素材・プロジェクトはブラウザの IndexedDB に保存されます。保存や書き出しのためにアップロードすることはありません。ブラウザのサイトデータを消すと消えるため、大事なプロジェクトは一覧画面の「ファイルに保存」でバックアップしてください。
+- Google（Gemini API）には、生成・編集を頼むときの指示文と、その生成に使う素材を送ります。参考資料の文章と、「画像を指示で編集」「画像を動かす」で使う画像が含まれます。人に見せたくない画像はこれらの操作に使わないでください。
 - 生成した素材には、Google の目に見えない電子透かし（SynthID）が含まれます。
 
 詳しい境界と残るリスクは [docs/security.md](docs/security.md) を参照してください。
