@@ -64,6 +64,10 @@ export class PreviewMedia implements FrameSource {
     this.onReady();
   }
 
+  duration(assetId: string): number | undefined {
+    return this.videos.get(assetId)?.duration;
+  }
+
   get(assetId: string): Drawable | null {
     const img = this.images.get(assetId);
     if (img) return img;
@@ -111,6 +115,11 @@ export class ExportMedia implements FrameSource {
   private images = new Map<string, ImageBitmap>();
   private cursors = new Map<string, VideoCursor>();
   private frames = new Map<string, CanvasImageSource>();
+  private durations = new Map<string, number>();
+
+  duration(assetId: string): number | undefined {
+    return this.durations.get(assetId);
+  }
 
   static async create(assets: StoredAsset[], W: number, H: number): Promise<ExportMedia> {
     const m = new ExportMedia();
@@ -125,6 +134,7 @@ export class ExportMedia implements FrameSource {
         const scale = Math.min(1, Math.max(W / track.displayWidth, H / track.displayHeight) * 1.15);
         const sink = new CanvasSink(track, { width: Math.round(track.displayWidth * scale), poolSize: 3 });
         m.cursors.set(a.meta.id, new VideoCursor(sink, duration));
+        m.durations.set(a.meta.id, duration);
       }
     }
     return m;

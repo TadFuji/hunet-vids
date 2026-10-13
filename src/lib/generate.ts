@@ -14,6 +14,8 @@ export async function genNarration(g: Gemini, scene: Scene, signal?: AbortSignal
   const meta = await addAsset(blob, { name: `ナレーション: ${scene.title}`, source: 'tts', prompt: text });
   const duration = meta.duration ?? 0;
   return (s) => {
+    // the text was edited while the audio was being made: don't attach audio that no longer matches
+    if (s.narration.text.trim() !== text) return s;
     const next = { ...s, narration: { ...s.narration, assetId: meta.id, duration, inVideo: false } };
     return { ...next, duration: Math.max(s.duration, minDurationFor(next)) };
   };

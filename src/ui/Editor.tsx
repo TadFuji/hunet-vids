@@ -18,10 +18,13 @@ import { MediaPanel, MusicPanel, SettingsPanel } from './ProjectPanels';
 import { Recorder } from './Recorder';
 import { ExportDialog } from './ExportDialog';
 
+const MAX_PARALLEL = 2;
+
 interface Job {
   id: string;
+  key: string;
   label: string;
-  status: 'running' | 'done' | 'error';
+  status: 'waiting' | 'running' | 'done' | 'error';
   detail: string;
   abort: AbortController;
 }
@@ -64,12 +67,31 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
     refreshAssets();
   }, [projectId, refreshAssets]);
 
-  // autosave
+  // autosave (debounced); a pending save is flushed when the editor closes or the tab is hidden
+  const pending = useRef<Project | null>(null);
   useEffect(() => {
     if (!project) return;
-    const t = setTimeout(() => saveProject(project), 400);
+    pending.current = project;
+    const t = setTimeout(() => {
+      saveProject(project);
+      pending.current = null;
+    }, 400);
     return () => clearTimeout(t);
   }, [project]);
+  useEffect(() => {
+    const flush = () => {
+      if (pending.current) saveProject(pending.current);
+      pending.current = null;
+    };
+    const onHide = () => document.visibilityState === 'hidden' && flush();
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', flush);
+    return () => {
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', flush);
+      flush();
+    };
+  }, []);
 
   /** Apply a change; snapshots are grouped so typing doesn't create one undo step per key. */
   const update = useCallback((fn: (p: Project) => Project) => {
@@ -108,23 +130,37 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
     setProject(next);
   };
 
-  // labels of jobs in flight; a second request with the same label is ignored (prevents double-charging)
+  // keys of jobs queued or in flight; a second request with the same key is ignored (prevents double-charging).
+  // At most MAX_PARALLEL jobs run at once so free-tier rate limits are not hit by batch generation.
   const running = useRef(new Set<string>());
-  const runJob = useCallback((label: string, fn: JobFn) => {
-    if (running.current.has(label)) return;
-    running.current.add(label);
-    const job: Job = { id: uid(), label, status: 'running', detail: '', abort: new AbortController() };
+  const active = useRef(0);
+  const queue = useRef<(() => void)[]>([]);
+  const runJob = useCallback((label: string, fn: JobFn, key: string = label) => {
+    if (running.current.has(key)) return;
+    running.current.add(key);
+    const job: Job = { id: uid(), key, label, status: 'waiting', detail: '順番待ち', abort: new AbortController() };
     setJobs((js) => [...js, job]);
     const patch = (p: Partial<Job>) => setJobs((js) => js.map((j) => (j.id === job.id ? { ...j, ...p } : j)));
-    fn(job.abort.signal, (detail) => patch({ detail }))
-      .finally(() => running.current.delete(label))
-      .then(() => {
-        patch({ status: 'done', detail: '完了' });
-        setTimeout(() => setJobs((js) => js.filter((j) => j.id !== job.id)), 2500);
-      })
-      .catch((e) => patch({ status: 'error', detail: explainError(e) }));
+    const start = () => {
+      active.current++;
+      patch({ status: 'running', detail: '' });
+      const work = job.abort.signal.aborted ? Promise.reject(new DOMException('中止しました', 'AbortError')) : fn(job.abort.signal, (detail) => patch({ detail }));
+      work
+        .finally(() => {
+          running.current.delete(key);
+          active.current--;
+          queue.current.shift()?.();
+        })
+        .then(() => {
+          patch({ status: 'done', detail: '完了' });
+          setTimeout(() => setJobs((js) => js.filter((j) => j.id !== job.id)), 2500);
+        })
+        .catch((e) => patch({ status: 'error', detail: explainError(e) }));
+    };
+    if (active.current < MAX_PARALLEL) start();
+    else queue.current.push(start);
   }, []);
-  const isBusy = useCallback((label: string) => jobs.some((j) => j.label === label && j.status === 'running'), [jobs]);
+  const isBusy = useCallback((key: string) => jobs.some((j) => j.key === key && (j.status === 'running' || j.status === 'waiting')), [jobs]);
 
   // generation requested from the "create" screen
   const autogenDone = useRef(false);
@@ -144,7 +180,7 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
         runJob(`ナレーション: ${s.title}`, async (signal) => {
           updateScene(s.id, await genNarration(gemini, s, signal));
           refreshAssets();
-        });
+        }, `voice:${s.id}`);
       }
       const hasMedia = s.background.kind === 'image' || s.background.kind === 'video';
       if (what.visuals && !hasMedia && s.visualPrompt.trim()) {
@@ -152,12 +188,12 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
           runJob(`動画生成: ${s.title}`, async (signal, progress) => {
             updateScene(s.id, await genVideo(gemini, p.aspect, s, { seconds: 8, resolution: '720p', fromImage: false, onWait: (sec) => progress(`生成中… ${sec} 秒経過`) }, signal));
             refreshAssets();
-          });
+          }, `video:${s.id}`);
         } else {
           runJob(`画像生成: ${s.title}`, async (signal) => {
             updateScene(s.id, await genImage(gemini, p.aspect, s, signal));
             refreshAssets();
-          });
+          }, `image:${s.id}`);
         }
       }
     }
@@ -400,12 +436,13 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
             <div key={j.id} className="job">
               <div className="row">
                 {j.status === 'running' && <span className="busy" />}
+                {j.status === 'waiting' && <span className="muted">…</span>}
                 {j.status === 'done' && <span style={{ color: 'var(--ok)' }}>✓</span>}
                 {j.status === 'error' && <span style={{ color: 'var(--danger)' }}>✕</span>}
                 <span className="grow" style={{ fontWeight: 600 }}>
                   {j.label}
                 </span>
-                {j.status === 'running' ? (
+                {j.status === 'running' || j.status === 'waiting' ? (
                   <button className="small ghost" onClick={() => j.abort.abort()}>
                     中止
                   </button>

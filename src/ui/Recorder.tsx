@@ -50,6 +50,9 @@ export function Recorder({ script, onClose, onSaved }: { script: string; onClose
           videoTrack = composite(scr, cam);
         }
       }
+      // the browser's "Stop sharing" button ends the screen track: finish the recording instead of freezing
+      tracks.current.forEach((t) => t.kind === 'video' && t.addEventListener('ended', () => recRef.current?.state === 'recording' && stop()));
+      tracks.current.push(videoTrack);
       setStream(new MediaStream([videoTrack, ...mic.getAudioTracks()]));
     } catch (e) {
       release();

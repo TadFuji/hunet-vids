@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { Project, TextItem } from '../lib/model';
-import { drawFrame, plan } from '../lib/render';
+import { drawFrame, plan, videoMediaTime } from '../lib/render';
 import { PreviewMedia } from '../lib/media';
 import { loadBuffers, schedule } from '../lib/mix';
 import { audioCtx } from '../lib/audio';
@@ -65,8 +65,7 @@ export function Player({ project, time, playing, onTime, onPlaying, selectedText
       if (v) {
         active.add(bg.assetId);
         const local = Math.min(t - span.start, span.scene.duration);
-        let target = bg.trimStart + local;
-        if (v.duration) target = bg.loop ? bg.trimStart + ((target - bg.trimStart) % Math.max(0.1, v.duration - bg.trimStart)) : Math.min(target, v.duration - 0.05);
+        const target = videoMediaTime(bg, local, v.duration);
         if (Math.abs(v.currentTime - target) > (play ? 0.3 : 0.02)) v.currentTime = target;
         if (play && v.paused) v.play().catch(() => {});
         if (!play && !v.paused) v.pause();

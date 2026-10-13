@@ -187,3 +187,92 @@ export function makeProject(partial: Partial<Project> = {}): Project {
     ...partial,
   };
 }
+
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const str = (v: unknown, d: string) => (typeof v === 'string' ? v : d);
+const num = (v: unknown, d: number, min = -Infinity, max = Infinity) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : d);
+
+function normalizeBackground(v: unknown, theme: Theme): Background {
+  if (!isObj(v)) return theme.bg;
+  if (v.kind === 'color') return { kind: 'color', color: str(v.color, '#111111') };
+  if (v.kind === 'gradient') return { kind: 'gradient', from: str(v.from, '#000000'), to: str(v.to, '#333333'), angle: num(v.angle, 135) };
+  if (v.kind === 'image' && typeof v.assetId === 'string') return { kind: 'image', assetId: v.assetId, fit: v.fit === 'contain' ? 'contain' : 'cover' };
+  if (v.kind === 'video' && typeof v.assetId === 'string')
+    return { kind: 'video', assetId: v.assetId, fit: v.fit === 'contain' ? 'contain' : 'cover', trimStart: num(v.trimStart, 0, 0), volume: num(v.volume, 0.8, 0, 1), loop: !!v.loop };
+  return theme.bg;
+}
+
+/**
+ * Turn untrusted JSON (an imported backup file) into a well-formed Project,
+ * filling defaults for anything missing so the UI can never crash on it.
+ */
+export function normalizeProject(raw: unknown): Project {
+  if (!isObj(raw)) throw new Error('プロジェクトの内容を読み取れませんでした');
+  const base = makeProject();
+  const aspect: Aspect = raw.aspect === '9:16' || raw.aspect === '1:1' ? raw.aspect : '16:9';
+  const theme = themeById(str(raw.themeId, base.themeId));
+  const scenes = (Array.isArray(raw.scenes) ? raw.scenes : []).filter(isObj).map((s) => {
+    const d = makeScene(theme);
+    const n = isObj(s.narration) ? s.narration : {};
+    return {
+      ...d,
+      id: str(s.id, d.id),
+      title: str(s.title, d.title),
+      duration: num(s.duration, d.duration, 0.5, 600),
+      background: normalizeBackground(s.background, theme),
+      motion: (['none', 'zoom-in', 'zoom-out', 'pan-left', 'pan-right'] as const).find((m) => m === s.motion) ?? 'none',
+      transition: (['cut', 'fade', 'slide-left', 'slide-up', 'wipe', 'zoom'] as const).find((m) => m === s.transition) ?? 'fade',
+      visualPrompt: str(s.visualPrompt, ''),
+      visualType: s.visualType === 'video' ? 'video' : 'image',
+      notes: str(s.notes, ''),
+      narration: {
+        text: str(n.text, ''),
+        voice: str(n.voice, d.narration.voice),
+        style: str(n.style, ''),
+        assetId: typeof n.assetId === 'string' ? n.assetId : null,
+        duration: typeof n.duration === 'number' && Number.isFinite(n.duration) ? n.duration : null,
+        inVideo: !!n.inVideo,
+      },
+      texts: (Array.isArray(s.texts) ? s.texts : []).filter(isObj).map((t) => {
+        const dt = makeText(theme);
+        return {
+          ...dt,
+          id: str(t.id, dt.id),
+          text: str(t.text, ''),
+          x: num(t.x, 0.5, 0, 1),
+          y: num(t.y, 0.5, 0, 1),
+          width: num(t.width, 0.8, 0.05, 1),
+          size: num(t.size, 0.07, 0.005, 0.5),
+          color: str(t.color, dt.color),
+          bg: typeof t.bg === 'string' ? t.bg : null,
+          weight: t.weight === 400 || t.weight === 900 ? t.weight : 700,
+          align: t.align === 'left' || t.align === 'right' ? t.align : 'center',
+          font: str(t.font, dt.font),
+          anim: (['none', 'fade', 'rise', 'pop', 'typewriter'] as const).find((a) => a === t.anim) ?? 'none',
+          start: num(t.start, 0, 0),
+          end: typeof t.end === 'number' && Number.isFinite(t.end) ? t.end : null,
+          shadow: t.shadow !== false,
+        } satisfies TextItem;
+      }),
+    } satisfies Scene;
+  });
+  const m = isObj(raw.music) && typeof raw.music.assetId === 'string' ? raw.music : null;
+  const c = isObj(raw.captions) ? raw.captions : {};
+  return {
+    ...base,
+    title: str(raw.title, base.title).slice(0, 200),
+    aspect,
+    themeId: theme.id,
+    scenes,
+    music: m ? { assetId: m.assetId as string, volume: num(m.volume, 0.35, 0, 1), fadeIn: num(m.fadeIn, 1, 0, 30), fadeOut: num(m.fadeOut, 2, 0, 30), duck: m.duck !== false, prompt: typeof m.prompt === 'string' ? m.prompt : undefined } : null,
+    captions: {
+      enabled: c.enabled !== false,
+      size: num(c.size, base.captions.size, 0.01, 0.2),
+      color: str(c.color, base.captions.color),
+      bg: str(c.bg, base.captions.bg),
+      position: c.position === 'top' || c.position === 'middle' ? c.position : 'bottom',
+    },
+    language: str(raw.language, base.language),
+    defaultVoice: str(raw.defaultVoice, base.defaultVoice),
+  };
+}

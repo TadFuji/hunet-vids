@@ -33,7 +33,11 @@ const ANIMS: { v: TextAnim; l: string }[] = [
 ];
 const STYLE_PRESETS = ['落ち着いて親しみやすく', '明るく元気に', 'ニュースのように明瞭に', 'ゆっくり優しく', 'ワクワクした調子で', 'ささやくように'];
 
+/** runJob with the job key first, so the key stays visible next to the label. */
+const runner = (api: EditorApi) => (label: string, key: string, fn: Parameters<EditorApi['runJob']>[1]) => api.runJob(label, fn, key);
+
 export function ScenePanel({ api }: { api: EditorApi }) {
+  const runFor = runner(api);
   const { scene, project } = api;
   const [secs, setSecs] = useState(8);
   const [res, setRes] = useState<'720p' | '1080p'>('720p');
@@ -159,16 +163,16 @@ export function ScenePanel({ api }: { api: EditorApi }) {
         <textarea rows={4} value={scene.visualPrompt} placeholder="例: aerial view of a misty forest at sunrise, cinematic" onChange={(e) => set({ visualPrompt: e.target.value })} />
         <div className="row wrap" style={{ marginTop: 8 }}>
           <button
-            disabled={api.isBusy(imgLabel)}
+            disabled={api.isBusy(`image:${scene.id}`)}
             onClick={() =>
-              api.runJob(imgLabel, async (signal) => {
+              runFor(imgLabel, `image:${scene.id}`, async (signal) => {
                 const fn = await genImage(api.gemini, project.aspect, scene, signal);
                 api.updateScene(scene.id, fn);
                 api.refreshAssets();
               })
             }
           >
-            {api.isBusy(imgLabel) && <span className="busy" />}画像を生成（約${PRICES.image2K.toFixed(2)}）
+            {api.isBusy(`image:${scene.id}`) && <span className="busy" />}画像を生成（約${PRICES.image2K.toFixed(2)}）
           </button>
         </div>
         <div className="grid3">
@@ -199,16 +203,16 @@ export function ScenePanel({ api }: { api: EditorApi }) {
         </div>
         <button
           style={{ marginTop: 8 }}
-          disabled={api.isBusy(vidLabel)}
+          disabled={api.isBusy(`video:${scene.id}`)}
           onClick={() =>
-            api.runJob(vidLabel, async (signal, progress) => {
+            runFor(vidLabel, `video:${scene.id}`, async (signal, progress) => {
               const fn = await genVideo(api.gemini, project.aspect, scene, { seconds: secs, resolution: res, fromImage, onWait: (s) => progress(`生成中… ${s} 秒経過`) }, signal);
               api.updateScene(scene.id, fn);
               api.refreshAssets();
             })
           }
         >
-          {api.isBusy(vidLabel) && <span className="busy" />}音声つき動画を生成（約${videoCost.toFixed(2)}）
+          {api.isBusy(`video:${scene.id}`) && <span className="busy" />}音声つき動画を生成（約${videoCost.toFixed(2)}）
         </button>
         <p className="small-text muted">
           動画は Gemini Omni で生成します（1〜数分かかります）。セリフや効果音も説明に書けば入ります。長さの指定は目安で、実際の長さと費用は前後することがあります。1080p の料金は Google が公表していないため、720p の料金で表示しています。{square && '正方形の動画は 16:9 で生成して中央を切り抜きます。'}
@@ -219,16 +223,16 @@ export function ScenePanel({ api }: { api: EditorApi }) {
             <div className="row">
               <input className="grow" value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} />
               <button
-                disabled={!editPrompt.trim() || api.isBusy(editLabel)}
+                disabled={!editPrompt.trim() || api.isBusy(`edit:${scene.id}`)}
                 onClick={() =>
-                  api.runJob(editLabel, async (signal) => {
+                  runFor(editLabel, `edit:${scene.id}`, async (signal) => {
                     const fn = await editImage(api.gemini, project.aspect, scene, editPrompt, signal);
                     api.updateScene(scene.id, fn);
                     api.refreshAssets();
                   })
                 }
               >
-                {api.isBusy(editLabel) && <span className="busy" />}編集
+                {api.isBusy(`edit:${scene.id}`) && <span className="busy" />}編集
               </button>
             </div>
           </>
@@ -242,16 +246,16 @@ export function ScenePanel({ api }: { api: EditorApi }) {
         <input value={presenter} onChange={(e) => setPresenter(e.target.value)} placeholder="例: a Japanese woman in her 30s in a bright office" />
         <button
           style={{ marginTop: 8 }}
-          disabled={!scene.narration.text.trim() || api.isBusy(presLabel)}
+          disabled={!scene.narration.text.trim() || api.isBusy(`presenter:${scene.id}`)}
           onClick={() =>
-            api.runJob(presLabel, async (signal, progress) => {
+            runFor(presLabel, `presenter:${scene.id}`, async (signal, progress) => {
               const fn = await genPresenter(api.gemini, project.aspect, scene, presenter, { seconds: secs, resolution: res, onWait: (s) => progress(`生成中… ${s} 秒経過`) }, signal);
               api.updateScene(scene.id, fn);
               api.refreshAssets();
             })
           }
         >
-          {api.isBusy(presLabel) && <span className="busy" />}話す人物の動画を生成（約${videoCost.toFixed(2)}）
+          {api.isBusy(`presenter:${scene.id}`) && <span className="busy" />}話す人物の動画を生成（約${videoCost.toFixed(2)}）
         </button>
         {scene.narration.inVideo && (
           <div className="small-text" style={{ marginTop: 8 }}>
@@ -393,6 +397,7 @@ export function TextPanel({ api }: { api: EditorApi }) {
 }
 
 export function VoicePanel({ api }: { api: EditorApi }) {
+  const runFor = runner(api);
   const { scene, project } = api;
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
@@ -405,7 +410,7 @@ export function VoicePanel({ api }: { api: EditorApi }) {
   const label = `ナレーション: ${scene.title}`;
   const rwLabel = `書き換え: ${scene.title}`;
   const doRewrite = (instruction: string) =>
-    api.runJob(rwLabel, async (signal) => {
+    runFor(rwLabel, `rewrite:${scene.id}`, async (signal) => {
       const text = await rewrite(api.gemini, n.text, instruction, signal);
       api.updateScene(scene.id, (s) => ({ ...s, narration: { ...s.narration, text, assetId: null, duration: null } }));
     });
@@ -419,7 +424,7 @@ export function VoicePanel({ api }: { api: EditorApi }) {
         <div className="row wrap" style={{ marginTop: 6 }}>
           <span className="small-text muted">AI で書き換え:</span>
           {['短く', 'わかりやすく', '丁寧に', '楽しく'].map((w) => (
-            <button key={w} className="small" disabled={!n.text.trim() || api.isBusy(rwLabel)} onClick={() => doRewrite(`make it ${w === '短く' ? 'shorter (about 70%)' : w === 'わかりやすく' ? 'easier to understand' : w === '丁寧に' ? 'more polite' : 'more fun and lively'}`)}>
+            <button key={w} className="small" disabled={!n.text.trim() || api.isBusy(`rewrite:${scene.id}`)} onClick={() => doRewrite(`make it ${w === '短く' ? 'shorter (about 70%)' : w === 'わかりやすく' ? 'easier to understand' : w === '丁寧に' ? 'more polite' : 'more fun and lively'}`)}>
               {w}
             </button>
           ))}
@@ -449,15 +454,15 @@ export function VoicePanel({ api }: { api: EditorApi }) {
         <div className="row" style={{ marginTop: 10 }}>
           <button
             className="primary"
-            disabled={!n.text.trim() || api.isBusy(label)}
+            disabled={!n.text.trim() || api.isBusy(`voice:${scene.id}`)}
             onClick={() =>
-              api.runJob(label, async (signal) => {
+              runFor(label, `voice:${scene.id}`, async (signal) => {
                 api.updateScene(scene.id, await genNarration(api.gemini, scene, signal));
                 api.refreshAssets();
               })
             }
           >
-            {api.isBusy(label) && <span className="busy" />}
+            {api.isBusy(`voice:${scene.id}`) && <span className="busy" />}
             {n.assetId ? '作り直す' : 'ナレーションを生成'}
           </button>
           {n.assetId && n.duration && <span className="small-text muted">{n.duration.toFixed(1)} 秒</span>}
@@ -480,7 +485,7 @@ export function VoicePanel({ api }: { api: EditorApi }) {
             disabled={!missing.length}
             onClick={() =>
               missing.forEach((s) =>
-                api.runJob(`ナレーション: ${s.title}`, async (signal) => {
+                runFor(`ナレーション: ${s.title}`, `voice:${s.id}`, async (signal) => {
                   api.updateScene(s.id, await genNarration(api.gemini, s, signal));
                   api.refreshAssets();
                 }),

@@ -48,11 +48,18 @@ export function schedule(ctx: BaseAudioContext, project: Project, buffers: Buffe
     const src = ctx.createBufferSource();
     src.buffer = buf;
     src.loop = loop;
+    if (loop) {
+      // loop the trimmed part, matching videoMediaTime()
+      src.loopStart = Math.min(bufOffset, Math.max(0, buf.duration - 0.05));
+      src.loopEnd = buf.duration;
+    }
     const g = ctx.createGain();
     g.gain.value = gain;
     src.connect(g).connect(ctx.destination);
     const off = bufOffset + skip;
-    src.start(at(start), loop ? off % buf.duration : off, loop ? undefined : dur - skip);
+    const loopLen = buf.duration - src.loopStart;
+    const startOff = loop && off >= buf.duration ? src.loopStart + ((off - src.loopStart) % loopLen) : off;
+    src.start(at(start), startOff, loop ? undefined : dur - skip);
     if (loop) src.stop(at(start + dur));
     nodes.push(src);
   };

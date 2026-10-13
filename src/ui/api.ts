@@ -11,8 +11,9 @@ export interface EditorApi {
   demo: boolean;
   update: (fn: (p: Project) => Project) => void;
   updateScene: (id: string, fn: (s: Scene) => Scene) => void;
-  runJob: (label: string, fn: JobFn) => void;
-  isBusy: (label: string) => boolean;
+  /** key identifies the job for de-duplication (default: label); use scene ids so equal titles don't collide */
+  runJob: (label: string, fn: JobFn, key?: string) => void;
+  isBusy: (key: string) => boolean;
   selectedTextId: string | null;
   setSelectedTextId: (id: string | null) => void;
   assets: AssetMeta[];

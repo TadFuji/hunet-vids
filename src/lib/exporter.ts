@@ -48,7 +48,7 @@ export async function exportMp4(project: Project, opts: ExportOptions): Promise<
     for (let i = 0; i < frames; i++) {
       if (opts.signal?.aborted) throw new DOMException('中止しました', 'AbortError');
       const t = i / opts.fps;
-      await media.prepare(mediaNeeds(rp, t));
+      await media.prepare(mediaNeeds(rp, t, (id) => media.duration(id)));
       drawFrame(ctx, project, rp, t, media);
       await video.add(t, 1 / opts.fps);
       if (i % 5 === 0) opts.onProgress(i / frames, '映像を書き出し中');

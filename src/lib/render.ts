@@ -10,6 +10,16 @@ export type Drawable = CanvasImageSource & { width?: number; height?: number };
 export interface FrameSource {
   /** Image (or current video frame) for an asset at a time local to the scene's media. */
   get(assetId: string, mediaTime: number): Drawable | null;
+  /** Length of a video asset in seconds, if known. */
+  duration?(assetId: string): number | undefined;
+}
+
+/** Position inside a background video for a scene-local time (handles trim, looping and clamping at the end). */
+export function videoMediaTime(bg: { trimStart: number; loop: boolean }, local: number, duration?: number): number {
+  const t = bg.trimStart + local;
+  if (!duration || !Number.isFinite(duration) || duration <= bg.trimStart + 0.05) return t;
+  if (bg.loop) return bg.trimStart + ((t - bg.trimStart) % (duration - bg.trimStart));
+  return Math.min(t, duration - 0.05);
 }
 
 const sizeOf = (d: Drawable): { w: number; h: number } => {
@@ -54,7 +64,7 @@ function drawBackground(ctx: CanvasRenderingContext2D, W: number, H: number, bg:
   }
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, W, H);
-  const mediaTime = bg.kind === 'video' ? bg.trimStart + local : 0;
+  const mediaTime = bg.kind === 'video' ? videoMediaTime(bg, local, src.duration?.(bg.assetId)) : 0;
   const img = src.get(bg.assetId, mediaTime);
   if (!img) return;
   const { w, h } = sizeOf(img);
@@ -192,14 +202,14 @@ export function plan(project: Project, scale = 1): RenderPlan {
 }
 
 /** Which (assetId, mediaTime) pairs drawFrame needs at time t. Used to pre-fetch frames during export. */
-export function mediaNeeds(rp: RenderPlan, t: number): { assetId: string; time: number }[] {
+export function mediaNeeds(rp: RenderPlan, t: number, durationOf: (assetId: string) => number | undefined = () => undefined): { assetId: string; time: number }[] {
   const out: { assetId: string; time: number }[] = [];
   const span = sceneAt(rp.spans, t);
   if (!span) return out;
   const push = (scene: Scene, local: number) => {
     const bg = scene.background;
     if (bg.kind === 'image') out.push({ assetId: bg.assetId, time: 0 });
-    if (bg.kind === 'video') out.push({ assetId: bg.assetId, time: bg.trimStart + local });
+    if (bg.kind === 'video') out.push({ assetId: bg.assetId, time: videoMediaTime(bg, local, durationOf(bg.assetId)) });
   };
   const local = t - span.start;
   push(span.scene, local);

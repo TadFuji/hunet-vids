@@ -89,9 +89,28 @@ export function storyboardPrompt(b: Brief): string {
 }
 
 export async function generateStoryboard(g: Gemini, b: Brief, signal?: AbortSignal): Promise<Storyboard> {
-  const sb = await g.json<Storyboard>(storyboardPrompt(b), STORYBOARD_SCHEMA, signal);
-  if (!sb?.scenes?.length) throw new Error('絵コンテを作れませんでした。指示を具体的にしてもう一度お試しください。');
+  const raw = await g.json<Partial<Storyboard>>(storyboardPrompt(b), STORYBOARD_SCHEMA, signal);
+  const sb = cleanStoryboard(raw);
+  if (!sb.scenes.length) throw new Error('絵コンテを作れませんでした。指示を具体的にしてもう一度お試しください。');
   return sb;
+}
+
+/** Model output is not guaranteed to follow the schema exactly; coerce every field. */
+export function cleanStoryboard(raw: unknown): Storyboard {
+  const o = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const s = (v: unknown) => (typeof v === 'string' ? v : '');
+  const motions = ['none', 'zoom-in', 'zoom-out', 'pan-left', 'pan-right'] as const;
+  const scenes = (Array.isArray(o.scenes) ? o.scenes : []).filter((x) => x && typeof x === 'object').map((x: Record<string, unknown>, i) => ({
+    title: s(x.title) || `シーン ${i + 1}`,
+    headline: s(x.headline),
+    subtext: s(x.subtext),
+    narration: s(x.narration),
+    visualPrompt: s(x.visualPrompt),
+    visualType: x.visualType === 'video' ? ('video' as const) : ('image' as const),
+    seconds: Math.max(3, Math.min(20, Number(x.seconds) || 5)),
+    motion: motions.find((m) => m === x.motion) ?? 'none',
+  }));
+  return { title: s(o.title), musicPrompt: s(o.musicPrompt), voiceStyle: s(o.voiceStyle), scenes };
 }
 
 export function sceneFromStoryboard(s: StoryboardScene, p: Project, voice: string, voiceStyle: string): Scene {
