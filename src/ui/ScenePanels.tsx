@@ -260,7 +260,11 @@ export function ScenePanel({ api }: { api: EditorApi }) {
         {scene.narration.inVideo && (
           <div className="small-text" style={{ marginTop: 8 }}>
             このシーンは動画の人物の声を使っています。{' '}
-            <button className="small" onClick={() => set({ narration: { ...scene.narration, inVideo: false } })}>
+            <button
+              className="small"
+              // mute the presenter clip so the regenerated narration is not doubled by the person's voice
+              onClick={() => set({ narration: { ...scene.narration, inVideo: false }, background: scene.background.kind === 'video' ? { ...scene.background, volume: 0 } : scene.background })}
+            >
               ナレーション音声に戻す
             </button>
           </div>
