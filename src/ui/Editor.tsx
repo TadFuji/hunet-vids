@@ -11,6 +11,7 @@ import type { EditorApi, JobFn } from './api';
 import { AUTOGEN_KEY } from './Home';
 import type { AutoGen } from './Home';
 import { Player } from './Player';
+import { Brand } from './Brand';
 import { Timeline } from './Timeline';
 import { SceneThumb } from './Thumb';
 import { ScenePanel, TextPanel, VoicePanel } from './ScenePanels';
@@ -298,6 +299,7 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
   return (
     <div className="editor">
       <div className="topbar">
+        <Brand small />
         <button className="ghost" onClick={() => (location.hash = '')} title="一覧へ戻る">
           ← 一覧
         </button>

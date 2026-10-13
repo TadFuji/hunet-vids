@@ -1,4 +1,4 @@
-// Core data model for a my-vids project. Everything here is plain JSON so it can be
+// Core data model for a hunet vids project. Everything here is plain JSON so it can be
 // stored in IndexedDB as-is. Media blobs live separately in the asset store.
 
 export type Aspect = '16:9' | '9:16' | '1:1';
@@ -123,6 +123,7 @@ export const uid = () =>
 export const TRANSITION_SECONDS = 0.6;
 
 export const THEMES: Theme[] = [
+  { id: 'hunet', name: 'hunet', font: '"Hiragino Sans", "Noto Sans JP", sans-serif', titleColor: '#ffffff', bodyColor: '#dbe4f6', accent: '#fc9a04', bg: { kind: 'gradient', from: '#0d357a', to: '#081f4a', angle: 135 } },
   { id: 'midnight', name: 'ミッドナイト', font: '"Hiragino Sans", "Noto Sans JP", sans-serif', titleColor: '#ffffff', bodyColor: '#d7defa', accent: '#5b8cff', bg: { kind: 'gradient', from: '#0d1430', to: '#24346e', angle: 135 } },
   { id: 'paper', name: 'ペーパー', font: '"Hiragino Mincho ProN", "Noto Serif JP", serif', titleColor: '#1c1c1c', bodyColor: '#333333', accent: '#c2410c', bg: { kind: 'color', color: '#f4f4f2' } },
   { id: 'vivid', name: 'ビビッド', font: '"Hiragino Sans", "Noto Sans JP", sans-serif', titleColor: '#ffffff', bodyColor: '#fff4e6', accent: '#ffd23f', bg: { kind: 'gradient', from: '#ff3d77', to: '#7a2cff', angle: 120 } },

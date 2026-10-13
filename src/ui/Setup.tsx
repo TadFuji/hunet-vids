@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Gemini, explainError } from '../lib/gemini';
+import { Brand } from './Brand';
 
 export function Setup({ current, onDone, onCancel }: { current: string; onDone: (key: string) => void; onCancel?: () => void }) {
   const [key, setKey] = useState(current === 'demo' ? '' : current);
@@ -22,8 +23,8 @@ export function Setup({ current, onDone, onCancel }: { current: string; onDone: 
   return (
     <div className="center-page">
       <div className="card setup">
-        <div className="brand" style={{ marginBottom: 14 }}>
-          my<span>-</span>vids
+        <div style={{ marginBottom: 14 }}>
+          <Brand />
         </div>
         <h1>Gemini API キーを設定</h1>
         <p className="muted">

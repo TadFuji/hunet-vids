@@ -8,6 +8,7 @@ import { generateStoryboard, projectFromStoryboard } from '../lib/storyboard';
 import type { Brief } from '../lib/storyboard';
 import { formatTime, layout } from '../lib/timeline';
 import { SceneThumb } from './Thumb';
+import { Brand } from './Brand';
 import { exportBackup, importBackup } from '../lib/backup';
 import { download } from './download';
 
@@ -85,16 +86,14 @@ export function Home({ gemini, demo, onSettings }: { gemini: Gemini; demo: boole
   return (
     <div className="home">
       <header>
-        <div className="brand">
-          my<span>-</span>vids
-        </div>
+        <Brand />
         {demo && <span className="small-text" style={{ color: 'var(--warn)' }}>体験モード（AI の代わりに仮の素材を作ります）</span>}
         <span className="grow" />
-        <label className="row" style={{ margin: 0 }} title="「ファイルに保存」で作った .myvids ファイルを読み込みます">
+        <label className="row" style={{ margin: 0 }} title="「ファイルに保存」で作った .hunetvids ファイル（旧形式 .myvids も可）を読み込みます">
           <span className="small-text muted">ファイルから開く</span>
           <input
             type="file"
-            accept=".myvids"
+            accept=".hunetvids,.myvids"
             style={{ maxWidth: 200 }}
             onChange={async (e) => {
               const f = e.target.files?.[0];
@@ -237,7 +236,7 @@ export function Home({ gemini, demo, onSettings }: { gemini: Gemini; demo: boole
                   title="素材ごと 1 つのファイルに保存します（バックアップ・別のパソコンへの移動用）"
                   onClick={async (e) => {
                     e.stopPropagation();
-                    download(await exportBackup(p), `${p.title}.myvids`);
+                    download(await exportBackup(p), `${p.title}.hunetvids`);
                   }}
                 >
                   ファイルに保存

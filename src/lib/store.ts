@@ -1,6 +1,7 @@
 // IndexedDB persistence: projects (JSON) and assets (metadata + blob). Everything stays in this browser.
 import type { AssetMeta, Project } from './model';
 
+// Storage names keep the original 'my-vids' prefix so existing projects and saved keys survive the rename.
 const DB_NAME = 'my-vids';
 const DB_VERSION = 1;
 

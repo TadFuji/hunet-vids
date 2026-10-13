@@ -1,4 +1,4 @@
-// Project backup file (.myvids): one file containing the project JSON and every asset it uses.
+// Project backup file (.hunetvids; older .myvids files use the same format): the project JSON and every asset it uses.
 // Layout: "MYVIDS1\n" | uint32 header length (LE) | header JSON | asset bytes back to back.
 import type { AssetMeta, Project } from './model';
 import { normalizeProject, uid } from './model';
@@ -27,7 +27,7 @@ export async function exportBackup(project: Project): Promise<Blob> {
 
 /** Restores a backup as a new project (existing assets with the same id are kept as they are). */
 export async function importBackup(file: Blob): Promise<Project> {
-  const bad = () => new Error('ファイルが壊れているか、my-vids のプロジェクトファイルではありません');
+  const bad = () => new Error('ファイルが壊れているか、hunet vids のプロジェクトファイルではありません');
   const magic = await file.slice(0, MAGIC.length).text();
   if (magic !== MAGIC) throw bad();
   const len = new DataView(await file.slice(MAGIC.length, MAGIC.length + 4).arrayBuffer()).getUint32(0, true);

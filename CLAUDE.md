@@ -1,4 +1,6 @@
-# CLAUDE.md — my-vids
+# CLAUDE.md — hunet vids (folder: my-vids)
+
+Branding: app name "hunet vids"; colors from the hunet swatch — orange #FC9A04, navy #0D357A (CSS tokens in src/index.css; logo files public/hunet-logo.png (recolored to the swatch), public/hunet-mark.png, favicon-64.png; `Brand` component in src/ui/Brand.tsx). Internal storage names (IndexedDB `my-vids`, localStorage `my-vids.*`, backup magic `MYVIDS1`) intentionally keep the old name so existing data survives. Backups are saved as `.hunetvids`; `.myvids` is still accepted.
 
 Browser-only Google Vids clone. React 19 + Vite + TypeScript, one runtime dependency besides React: `mediabunny` (WebCodecs MP4 encode/decode). No backend: each user's Gemini API key is stored in `localStorage` and sent only to `generativelanguage.googleapis.com` via the `x-goog-api-key` header.
 
