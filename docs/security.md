@@ -27,14 +27,16 @@ flowchart LR
 |---|---|---|
 | キーの送信先 | `fetch` の宛先は固定の `https://generativelanguage.googleapis.com/v1beta` のみ。キーは `x-goog-api-key` ヘッダーで送り、URL・本文には入れない | `src/lib/gemini.ts` / `tests/api-key.spec.ts`, `src/lib/gemini.test.ts` |
 | 応答に含まれる取得先 | 生成結果の `uri` は `files/...`（同じ Google のホスト）に限って取得し、それ以外にはキーを送らずに中止 | `Gemini.download` / `gemini.test.ts` |
-| 通信先の制限 | Content-Security-Policy の `connect-src` を自サイトと Gemini API に限定。スクリプトは自サイトのファイルだけ（インラインや外部 CDN なし） | `vercel.json` / `tests/headers.spec.ts`, `scripts/vercel-config.test.mjs` |
-| 埋め込み・その他 | `frame-ancestors 'none'`、`X-Frame-Options: DENY`、`object-src 'none'`、`base-uri 'none'`、`form-action 'none'`、`X-Content-Type-Options: nosniff`、`Cross-Origin-Opener-Policy: same-origin`、HSTS | `vercel.json` |
-| ブラウザ機能 | `Permissions-Policy` でカメラ・マイク・画面共有は自サイトのみ（録画機能のため）、位置情報・決済は無効 | `vercel.json` |
+| 通信先の制限 | Content-Security-Policy の `connect-src` を自サイトと Gemini API（ほかにブラウザ内の `blob:`・`data:`）に限定。スクリプトは自サイトのファイルだけ（インラインや外部 CDN なし）。スタイルは画面部品のためインライン指定を許可（`style-src 'unsafe-inline'`） | `vercel.json` / `tests/headers.spec.ts`, `scripts/vercel-config.test.mjs` |
+| 埋め込み・その他 | `frame-ancestors 'none'`、`object-src 'none'`、`form-action 'none'`、`X-Content-Type-Options: nosniff`。加えて `X-Frame-Options: DENY`、`base-uri 'none'`、`Cross-Origin-Opener-Policy: same-origin`、HSTS（※） | `vercel.json` |
+| ブラウザ機能 | `Permissions-Policy` でカメラ・マイク・画面共有は自サイトのみ（録画機能のため）、位置情報は無効。決済も無効（※） | `vercel.json` |
 | 表示 | AI の出力や読み込んだファイルの文字は React のテキストと Canvas にだけ描き、HTML として解釈しない（`innerHTML` 等を使わない） | `src/` 全体 |
 | 保存ファイルの読み込み | `.hunetvids` は信用しない入力として扱い、サイズと位置を検査し、全項目を補正してから保存。壊れていれば何も書き込まずに拒否 | `src/lib/backup.ts`, `normalizeProject()` / `hardening.test.ts`, `tests/demo.spec.ts` |
 | エラー表示 | Google のエラーを日本語の対処法に置き換えて表示。キーはエラー文に含まれない | `explainError()` / `tests/api-key.spec.ts` |
 | 課金 | 生成ボタンに費用の目安、まとめて生成する前に確認。同じ生成の二重実行を防止、同時実行は 2 件まで。中止時は Google 側の生成も取り消す | `src/ui/Editor.tsx`, `gemini.ts` / `gemini.test.ts` |
 | リポジトリ | CI で全履歴の秘密情報検査（gitleaks）、CodeQL、依存関係の脆弱性検査、Dependabot | `.github/` |
+
+※ 2026-10-13 時点では、リポジトリの `vercel.json` には含まれていますが、公開サイトへの反映は次回の公開で行われます。反映状況は [公開記録](deployment.md) を参照してください。
 
 ## 残るリスク（守れないもの）
 

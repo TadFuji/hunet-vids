@@ -18,11 +18,11 @@
   1. Vids では AI 生成クリップを使わず、アップロード素材と録画だけで作る。
   2. Flow や Gemini アプリで透かしをオフにして生成した動画を、Vids にアップロードする。
 
-my-vids は Gemini API を直接呼び出します。API で生成した動画・画像・音楽に入るのは、目に見えない SynthID だけです。公式文書に目に見える透かしの記載はありません（https://ai.google.dev/gemini-api/docs/omni の「All generated videos include SynthID watermarking」）。
+hunet vids（旧名 my-vids）は Gemini API を直接呼び出します。API で生成した動画・画像・音楽に入るのは、目に見えない SynthID だけです。公式文書に目に見える透かしの記載はありません（https://ai.google.dev/gemini-api/docs/omni の「All generated videos include SynthID watermarking」）。
 
-## 2. Google Vids の機能と my-vids の対応
+## 2. Google Vids の機能と hunet vids の対応
 
-| Google Vids の機能 | my-vids | 補足 |
+| Google Vids の機能 | hunet vids | 補足 |
 |---|---|---|
 | Help me create（指示文から絵コンテ） | ○ | 参考資料（文章・テキストファイル）も使えます |
 | 16:9 / 9:16 / 1:1 | ○ | あとから変更できます |
@@ -41,7 +41,7 @@ my-vids は Gemini API を直接呼び出します。API で生成した動画�
 | 共同編集・コメント・Drive 共有・YouTube 直接公開 | × | 各自のブラウザ内で完結する設計のため未対応 |
 | GIF 書き出し | × | 未対応 |
 
-Vids にない my-vids の利点：透かしなし、BGM の自動音量調整（ナレーション中に下げる）、背景のズーム・パン、字幕の SRT 保存、費用の目安表示、元に戻す／やり直す、API キーさえあれば誰でも使える。
+Vids にない hunet vids の利点：透かしなし、BGM の自動音量調整（ナレーション中に下げる）、背景のズーム・パン、字幕の SRT 保存、費用の目安表示、元に戻す／やり直す、API キーさえあれば誰でも使える。
 
 ## 3. Gemini API（2026-10-13 時点）
 
@@ -55,6 +55,6 @@ Vids にない my-vids の利点：透かしなし、BGM の自動音量調整�
 | 動画 | `gemini-omni-1.1-flash` | なし | 720p で 1 秒 約 $0.10 |
 | 音楽 | `lyria-3-clip-preview`（30 秒）／`lyria-3.5`（曲） | なし | 1 曲 $0.04 / $0.08 |
 
-- Veo（`veo-3.1-*`）は 2026-10-22 に提供終了、Imagen 4 は 2026-08-17 に提供終了。my-vids では使っていません。
+- Veo（`veo-3.1-*`）は 2026-10-22 に提供終了、Imagen 4 は 2026-08-17 に提供終了。hunet vids では使っていません。
 - 出典：https://ai.google.dev/gemini-api/docs/changelog 、https://ai.google.dev/gemini-api/docs/deprecations 、https://ai.google.dev/gemini-api/docs/pricing 、https://ai.google.dev/api/interactions
 - ブラウザから直接呼べること（CORS）は、事前確認リクエストで確認済みです（キーなしでの確認）。

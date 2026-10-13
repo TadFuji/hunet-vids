@@ -19,7 +19,7 @@ npx playwright install chromium   # Chromium でテストする場合のみ
 | `npm start` | `dist/` を本番と同じヘッダーで配信（http://127.0.0.1:4180/） |
 | `npm test` | 単体テスト（Vitest） |
 | `npm run test:e2e` | ブラウザテスト（Playwright。自動で `npm start` を起動。先に `npm run build`） |
-| `npm run check` | ビルド＋単体テスト＋文書のリンク検査（CI と同じ） |
+| `npm run check` | ビルド＋単体テスト＋文書のリンク検査（CI はこれに加えて、ビルドで追跡ファイルが変わらないことと `npm audit --audit-level=high` を検査） |
 | `npm run check:docs` | Markdown のローカルリンク検査（ネット接続なし） |
 | `npm run test:live` | 実 API の確認（下記） |
 | `node scripts/capture-screenshots.mjs` | README 用の画面写真を体験モードで撮影（先に `npm run build`） |

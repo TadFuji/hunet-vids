@@ -27,3 +27,4 @@ live-output
 .env*
 test-results
 playwright-report
+.claude/
