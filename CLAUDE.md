@@ -22,6 +22,7 @@ Browser-only Google Vids clone. React 19 + Vite + TypeScript, one runtime depend
 - `src/lib/storyboard.ts` — "Help me create" prompt + JSON schema
 - `src/lib/generate.ts` — generate asset → return a scene/project updater
 - `src/lib/store.ts` — IndexedDB (projects, assets) + API key in localStorage
+- `src/lib/backup.ts` — `.myvids` backup file (magic + header JSON + concatenated asset bytes)
 - `src/ui/*` — Setup, Home, Editor (Player, Timeline, inspector panels, Recorder, ExportDialog)
 
 ## Design decisions
