@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: セキュリティ上の問題を非公開で報告する
+    url: https://github.com/TadFuji/hunet-vids/security/advisories/new
+    about: API キーの値や非公開の素材を添付しないでください。
+  - name: 公開版を開く
+    url: https://hunet-vids.vercel.app
+    about: キーなしで試せる「体験モード」で、不具合を再現できるか確認できます。

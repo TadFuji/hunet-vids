@@ -1,15 +1,19 @@
 {
   "name": "hunet-vids",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
+    "start": "node server.mjs",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:live": "GEMINI_LIVE=1 vitest run src/lib/gemini.live.test.ts",
+    "check": "npm run build && npm test && npm run check:docs",
+    "check:docs": "node scripts/check-docs.mjs",
     "lint": "oxlint",
-    "preview": "vite preview",
-    "test": "vitest run --exclude 'src/**/*.live.test.ts'",
-    "test:live": "vitest run src/lib/gemini.live.test.ts"
+    "preview": "vite preview"
   },
   "dependencies": {
     "mediabunny": "^1.61.4",
@@ -17,6 +21,7 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
@@ -25,5 +30,9 @@
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vitest": "^5.0.4"
+  },
+  "description": "hunet vids: browser-only AI video maker on the Gemini API (bring your own key)",
+  "engines": {
+    "node": "^22.12.0 || >=24.0.0"
   }
 }

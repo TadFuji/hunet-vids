@@ -44,7 +44,7 @@ export function ExportDialog({ project, onClose }: { project: Project; onClose: 
         <div className="grid2">
           <div>
             <label>画質</label>
-            <select value={quality} disabled={!!progress} onChange={(e) => setQuality(e.target.value as '1080' | '720')}>
+            <select aria-label="画質" value={quality} disabled={!!progress} onChange={(e) => setQuality(e.target.value as '1080' | '720')}>
               <option value="1080">
                 フル HD（{w}×{h}）
               </option>
@@ -55,7 +55,7 @@ export function ExportDialog({ project, onClose }: { project: Project; onClose: 
           </div>
           <div>
             <label>フレームレート</label>
-            <select value={fps} disabled={!!progress} onChange={(e) => setFps(Number(e.target.value))}>
+            <select aria-label="フレームレート" value={fps} disabled={!!progress} onChange={(e) => setFps(Number(e.target.value))}>
               <option value={30}>30 fps</option>
               <option value={24}>24 fps</option>
               <option value={60}>60 fps</option>

@@ -1,55 +1,27 @@
 # CLAUDE.md — hunet vids (folder: my-vids)
 
-Branding: app name "hunet vids"; colors from the hunet swatch — orange #FC9A04, navy #0D357A (CSS tokens in src/index.css; logo files public/hunet-logo.png (recolored to the swatch), public/hunet-mark.png, favicon-64.png; `Brand` component in src/ui/Brand.tsx). Internal storage names (IndexedDB `my-vids`, localStorage `my-vids.*`, backup magic `MYVIDS1`) intentionally keep the old name so existing data survives. Backups are saved as `.hunetvids`; `.myvids` is still accepted.
+@AGENTS.md
 
-Browser-only Google Vids clone. React 19 + Vite + TypeScript, one runtime dependency besides React: `mediabunny` (WebCodecs MP4 encode/decode). No backend: each user's Gemini API key is stored in `localStorage` and sent only to `generativelanguage.googleapis.com` via the `x-goog-api-key` header.
+Browser-only Google Vids clone ("hunet vids"). React 19 + Vite + TypeScript; the only runtime dependency besides React is `mediabunny` (WebCodecs MP4 encode/decode). No backend. Architecture: [docs/architecture.md](docs/architecture.md). Security model and residual risks: [docs/security.md](docs/security.md). Commands and test strategy: [docs/development.md](docs/development.md). Deploying: [docs/deployment.md](docs/deployment.md). What has / hasn't been verified (incl. real API): [docs/validation.md](docs/validation.md).
 
-## Commands
+## Quick reference
 
-- `npm run dev -- --port 5178` — dev server (`.claude/launch.json` entry "my-vids")
-- `npm test` — unit tests (timeline, captions, WAV, API client with mocked fetch, backup/storyboard hardening)
-- `npm run test:live` — real API checks; reads `GEMINI_API_KEY` from env or `.env.local` (git-ignored). Free checks only by default; `LIVE_PAID=image,music,video` adds paid ones. Outputs go to `live-output/` (git-ignored).
-- `npm run build` — type-check + production build into `dist/`
-- Browser check without a key: choose "キーなしで体験する" (key = `demo` → `MockGemini` in `src/lib/mock.ts` produces placeholder media locally).
+- Dev: `npm run dev` (http://127.0.0.1:5173) or the `.claude/launch.json` entry. Production-like: `npm run build && npm start` (http://127.0.0.1:4180 — not 4173, which the owner's Banana Studio uses).
+- Verify before reporting: `npm run check` and `npm run test:e2e`. Browser check without a key: "キーなしで体験する" (`MockGemini`).
+- Real API: `npm run test:live` with `GEMINI_API_KEY` in `.env.local`; paid checks need `LIVE_PAID=...` and the owner's approval.
+- Branding: orange #FC9A04, navy #0D357A (tokens in `src/index.css`), logo `public/hunet-logo.png` (recolored to the swatch), `Brand` component.
 
-## Layout
+## Design decisions not obvious from the code
 
-- `src/lib/model.ts` — project JSON model (scenes, texts, narration, music, captions, themes)
-- `src/lib/timeline.ts` — scene spans, caption splitting/timing, SRT
-- `src/lib/render.ts` — `drawFrame()` canvas renderer shared by preview and export (transitions, Ken Burns motion, text anims, captions)
-- `src/lib/mix.ts` — WebAudio scheduling for preview and `OfflineAudioContext` mixdown (music ducking/fades)
-- `src/lib/media.ts` — `PreviewMedia` (<img>/<video>) and `ExportMedia` (frame-accurate decode with mediabunny `CanvasSink`)
-- `src/lib/exporter.ts` — MP4 export (H.264 + AAC) via mediabunny `CanvasSource`/`AudioBufferSource`
-- `src/lib/gemini.ts` — Interactions API client; **all model IDs in `MODELS`**
-- `src/lib/storyboard.ts` — "Help me create" prompt + JSON schema
-- `src/lib/generate.ts` — generate asset → return a scene/project updater
-- `src/lib/store.ts` — IndexedDB (projects, assets) + API key in localStorage
-- `src/lib/backup.ts` — `.myvids` backup file (magic + header JSON + concatenated asset bytes)
-- `src/ui/*` — Setup, Home, Editor (Player, Timeline, inspector panels, Recorder, ExportDialog)
+- Interactions API everywhere. Long jobs send `background: true` and poll; any 400 on that POST retries once synchronously (a rejected POST creates no job). Background mode is documented only for text models, so for Omni/Nano Banana/Lyria it is unverified.
+- Video model is `gemini-omni-1.1-flash` (Veo 3.1 shut down 2026-10-22; Imagen 4 already gone). Omni supports only 16:9 / 9:16; 1:1 projects use 16:9 + cover crop.
+- Plain `fetch`, not `@google/genai`: an SDK version added an `Api-Revision` header that broke browser CORS (js-genai issue #1723).
+- The API key is persisted in localStorage on purpose ("enter the key once"). The sister app hunet-banana keeps it only in worker memory; switching is an open option, documented in docs/security.md.
+- Narration audio drives scene length (`minDurationFor`); captions come from narration text, timed proportionally by characters.
+- Generated/uploaded media are shared across projects; deleting a project does not delete assets.
 
-## Design decisions
+## Repository and deployment
 
-- Gemini **Interactions API** (`POST /v1beta/interactions`) is used for everything; it is Google's primary API as of 2026-10. Long jobs (image/video/music) send `background: true` and poll `GET /v1beta/interactions/{id}`; any 400 on the background POST retries once synchronously (a rejected POST creates no job, so no double charge). Background mode is documented only for text models, so whether Omni/Nano Banana/Lyria accept it is unverified. Aborting a job also calls `POST /interactions/{id}/cancel` so Google stops billing. Polling continues only while status is `in_progress`/`queued`.
-- `Editor.runJob(label, fn, key)` ignores a job whose key is already queued/running (prevents duplicate paid generations); keys use scene ids (`voice:`, `image:`, `video:`, ...) so scenes with equal titles don't collide. At most 2 jobs run at once (`MAX_PARALLEL`), the rest wait.
-- Imported `.myvids` files are untrusted: `normalizeProject()` (model.ts) coerces every field, and `importBackup` bounds-checks sizes before writing anything. AI storyboard JSON is coerced by `cleanStoryboard()`.
-- Background video time (trim/loop/clamp) is computed by one function, `videoMediaTime()` in render.ts, used by preview, export and (via loopStart) audio.
-- An `ErrorBoundary` (src/ui/ErrorBoundary.tsx) replaces blank screens with a recover screen. Editor flushes a pending autosave on unmount/pagehide.
-- `Gemini.download` only accepts `files/...` URIs on generativelanguage.googleapis.com, so the key can never be sent elsewhere. Video uses `delivery: 'uri'` (inline is limited to ~4MB).
-- Video model is `gemini-omni-1.1-flash` (Veo 3.1 shuts down 2026-10-22; Imagen 4 already shut down). Omni supports only 16:9 / 9:16, so 1:1 projects use 16:9 + cover crop.
-- Plain `fetch`, not `@google/genai`: an SDK version added an `Api-Revision` header that breaks browser CORS (js-genai issue #1723).
-- Narration audio drives scene length (`minDurationFor`); captions are derived from narration text, timed proportionally by characters.
-- Generated/uploaded media are shared across projects (asset library); deleting a project does not delete assets.
-
-## Deployment
-
-- Source: GitHub `TadFuji/hunet-vids` (private), remote `origin`, branch `main`. The owner asked on 2026-10-13 to keep the code on GitHub: push `main` after committing verified changes.
-- The GitHub repo is intentionally NOT connected to Vercel (owner's decision, 2026-10-13): sending commits to GitHub does not update the site. Deploy manually with the CLI command below only when asked to update the site.
-
-- Production: https://hunet-vids.vercel.app — Vercel project `hunet-vids` (team "tadfuji's projects", scope `tadfujis-projects`). Deploy with `npx vercel@latest deploy --prod --scope tadfujis-projects` from this folder (the CLI is not installed globally; `.vercel/` holds the link and is git-ignored; `.vercelignore` keeps `.env*`, `live-output/`, `.claude/` out of uploads). Note `vercel link` writes a VERCEL_OIDC_TOKEN into `.env.local` (git-ignored). `vercel.json` sets build/output and security headers (CSP allowing only self + generativelanguage.googleapis.com; mediabunny needs `worker-src blob:`). Referrer-Policy is `strict-origin-when-cross-origin` so users can restrict their API key to the site's origin.
-
-## Known issues / not verified
-
-- Request shapes were written from the official docs (2026-10-13); they have NOT yet been exercised with a real key. Run `npm run test:live` first when a key is available.
-- The `duration` field of the video `response_format` is documented only as a string; we send `"8s"` and retry once without it on a 400 mentioning duration.
-- Not implemented vs Vids: Google Slides import, stock library, collaboration/comments, YouTube upload, GIF export.
-- Research notes: `docs/research.md`.
+- GitHub `TadFuji/hunet-vids` (public), branch `main`. Changes go in through Pull Requests that pass CI (see docs/development.md). The owner asked (2026-10-13) to keep the code on GitHub: after verifying a change, open a PR, wait for checks, squash-merge, then sync local `main`.
+- GitHub is intentionally NOT connected to Vercel (owner's decision, 2026-10-13). Deploy manually (`npx vercel@latest deploy --prod --scope tadfujis-projects`) only when asked to update the site.
+- `vercel link` writes a VERCEL_OIDC_TOKEN into `.env.local` (git- and vercel-ignored).
