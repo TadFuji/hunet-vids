@@ -106,6 +106,9 @@ export function Home({ gemini, demo, onSettings }: { gemini: Gemini; demo: boole
             }}
           />
         </label>
+        <a className="link-button" href="/guide.pdf" target="_blank" rel="noopener">
+          使い方（PDF）
+        </a>
         <button onClick={onSettings}>API キー設定</button>
       </header>
 

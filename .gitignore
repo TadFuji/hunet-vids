@@ -28,3 +28,4 @@ live-output
 test-results
 playwright-report
 .claude/
+docs/manual/manual.html

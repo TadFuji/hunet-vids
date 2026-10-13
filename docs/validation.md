@@ -9,7 +9,7 @@
 | 種類 | 件数 | 結果 |
 |---|---|---|
 | 単体テスト（`npm test`） | 24 | 成功 |
-| ブラウザテスト（`npm run test:e2e`、Chrome / Chromium） | 11 | 成功 |
+| ブラウザテスト（`npm run test:e2e`、Chrome / Chromium） | 12 | 成功 |
 | 文書リンク検査（`npm run check:docs`） | — | 成功 |
 | 依存関係の脆弱性検査（`npm audit --audit-level=high`） | — | 0 件 |
 

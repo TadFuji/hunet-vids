@@ -40,6 +40,13 @@ export function Setup({ current, onDone, onCancel }: { current: string; onDone: 
           <li>表示されたキー（AIza… で始まる文字列）をコピーして下に貼り付ける</li>
           <li>画像・動画・音楽の生成は有料枠です。AI Studio で課金（Billing）を有効にしてください。台本とナレーションは無料枠でも使えます。</li>
         </ol>
+        <p className="small-text muted">
+          詳しい手順は{' '}
+          <a href="/guide.pdf" target="_blank" rel="noopener">
+            図解取扱説明書（PDF）
+          </a>
+          をご覧ください。
+        </p>
         <label htmlFor="key">API キー</label>
         <input id="key" type="password" autoComplete="off" value={key} placeholder="AIza..." onChange={(e) => setKey(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && key && submit()} />
         {error && <p className="error">{error}</p>}

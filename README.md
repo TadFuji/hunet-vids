@@ -5,7 +5,7 @@
 
 Google Vids のように、指示文から動画を作るブラウザアプリです。台本（絵コンテ）、ナレーション、背景の画像・動画、BGM を Gemini API で生成し、ブラウザの中で編集して MP4 に書き出します。利用者は各自の Gemini API キーを使います（BYOK）。サーバーは持たず、キー・動画・素材はその人のブラウザの中だけに保存されます。**書き出した動画に目に見える透かしは入りません。**
 
-**公開アプリ:** https://hunet-vids.vercel.app ・ **安全設計:** [docs/security.md](docs/security.md) ・ **検証記録:** [docs/validation.md](docs/validation.md)
+**公開アプリ:** https://hunet-vids.vercel.app ・ **図解取扱説明書:** [PDF](output/pdf/hunet_vids_図解取扱説明書.pdf) ・ **安全設計:** [docs/security.md](docs/security.md) ・ **検証記録:** [docs/validation.md](docs/validation.md)
 
 ![編集画面（体験モード）](docs/screenshots/editor.png)
 

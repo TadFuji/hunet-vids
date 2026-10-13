@@ -158,7 +158,7 @@ export function Recorder({ script, onClose, onSaved }: { script: string; onClose
         <div style={{ position: 'relative', marginTop: 12, background: '#000', borderRadius: 8, aspectRatio: '16/9', overflow: 'hidden' }}>
           <video ref={videoRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           {prompter && stream && (
-            <div style={{ position: 'absolute', left: 0, right: 0, top: 0, padding: '10px 16px', background: 'rgba(0,0,0,0.6)', fontSize: 20, lineHeight: 1.6, maxHeight: '40%', overflowY: 'auto' }}>{prompter}</div>
+            <div style={{ position: 'absolute', left: 0, right: 0, top: 0, padding: '10px 16px', background: 'rgba(0,0,0,0.6)', color: '#ffffff', fontSize: 20, lineHeight: 1.6, maxHeight: '40%', overflowY: 'auto' }}>{prompter}</div>
           )}
           {recording && <div style={{ position: 'absolute', left: 12, bottom: 12, color: '#ff6b6b', fontWeight: 700 }}>● 録画中 {elapsed} 秒</div>}
         </div>

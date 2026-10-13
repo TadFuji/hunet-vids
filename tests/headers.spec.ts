@@ -35,3 +35,10 @@ test('write methods are refused', async ({ request, baseURL }) => {
   const res = await request.post(`${baseURL}/`, { data: 'x' });
   expect(res.status()).toBe(405);
 });
+
+test('the illustrated manual is served from the same origin as a PDF', async ({ request }) => {
+  const res = await request.get('/guide.pdf');
+  expect(res.status()).toBe(200);
+  expect(res.headers()['content-type']).toContain('application/pdf');
+  expect((await res.body()).subarray(0, 5).toString()).toBe('%PDF-');
+});

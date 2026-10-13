@@ -23,6 +23,7 @@ npx playwright install chromium   # Chromium でテストする場合のみ
 | `npm run check:docs` | Markdown のローカルリンク検査（ネット接続なし） |
 | `npm run test:live` | 実 API の確認（下記） |
 | `node scripts/capture-screenshots.mjs` | README 用の画面写真を体験モードで撮影（先に `npm run build`） |
+| `npm run manual` | 図解取扱説明書（PDF）を撮影から作り直す（[作り方](manual/README.md)） |
 
 キーなしで画面を確かめるときは「キーなしで体験する」を使います（`src/lib/mock.ts` が仮の素材を作ります）。
 
