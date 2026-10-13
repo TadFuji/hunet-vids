@@ -8,6 +8,8 @@ import { generateStoryboard, projectFromStoryboard } from '../lib/storyboard';
 import type { Brief } from '../lib/storyboard';
 import { formatTime, layout } from '../lib/timeline';
 import { SceneThumb } from './Thumb';
+import { exportBackup, importBackup } from '../lib/backup';
+import { download } from './download';
 
 export interface AutoGen {
   narration: boolean;
@@ -88,6 +90,23 @@ export function Home({ gemini, demo, onSettings }: { gemini: Gemini; demo: boole
         </div>
         {demo && <span className="small-text" style={{ color: 'var(--warn)' }}>体験モード（AI の代わりに仮の素材を作ります）</span>}
         <span className="grow" />
+        <label className="row" style={{ margin: 0 }} title="「ファイルに保存」で作った .myvids ファイルを読み込みます">
+          <span className="small-text muted">ファイルから開く</span>
+          <input
+            type="file"
+            accept=".myvids"
+            style={{ maxWidth: 200 }}
+            onChange={async (e) => {
+              const f = e.target.files?.[0];
+              if (!f) return;
+              try {
+                open(await importBackup(f));
+              } catch (err) {
+                setError(explainError(err));
+              }
+            }}
+          />
+        </label>
         <button onClick={onSettings}>API キー設定</button>
       </header>
 
@@ -213,6 +232,16 @@ export function Home({ gemini, demo, onSettings }: { gemini: Gemini; demo: boole
                   {p.aspect}・{p.scenes.length} シーン・{formatTime(layout(p).total)}
                 </span>
                 <span className="grow" />
+                <button
+                  className="small ghost"
+                  title="素材ごと 1 つのファイルに保存します（バックアップ・別のパソコンへの移動用）"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    download(await exportBackup(p), `${p.title}.myvids`);
+                  }}
+                >
+                  ファイルに保存
+                </button>
                 <button
                   className="small ghost danger"
                   onClick={async (e) => {
