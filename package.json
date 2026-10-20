@@ -17,9 +17,9 @@
     "manual": "npm run build && node docs/manual/capture.mjs && node docs/manual/build.mjs && node scripts/copy-guide.mjs"
   },
   "dependencies": {
-    "mediabunny": "^1.61.4",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "mediabunny": "^1.61.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@playwright/test": "1.64.0",
