@@ -116,23 +116,32 @@ export class Gemini {
   }
 
   /** Create an interaction; long jobs run in background mode and are polled until done. */
-  async interact(body: Record<string, unknown>, opts: { signal?: AbortSignal; background?: boolean; onWait?: (sec: number) => void } = {}): Promise<Block[]> {
+  async interact(
+    body: Record<string, unknown>,
+    opts: { signal?: AbortSignal; background?: boolean; onWait?: (sec: number) => void; onPosted?: () => void } = {},
+  ): Promise<Block[]> {
     let it: Interaction;
     if (opts.background) {
       try {
         it = await this.request<Interaction>('POST', '/interactions', { ...body, background: true }, opts.signal);
       } catch (e) {
         // Background mode is documented only for text models. A rejected POST (400) creates no job,
-        // so retrying once synchronously cannot double-charge.
-        if (e instanceof GeminiError && e.status === 400) it = await this.request<Interaction>('POST', '/interactions', body, opts.signal);
-        else throw e;
+        // so retrying once synchronously cannot double-charge. Do not retry key, duration or policy errors.
+        if (e instanceof GeminiError && e.status === 400 && !/API key not valid|API_KEY_INVALID|duration|safety|blocked|prohibited|policy/i.test(e.message)) {
+          it = await this.request<Interaction>('POST', '/interactions', body, opts.signal);
+        } else throw e;
       }
       const id = it.id;
+      opts.onPosted?.();
       // Aborting must also cancel the job on Google's side, otherwise it keeps running (and billing).
       const cancel = () => {
         if (id) this.request('POST', `/interactions/${encodeURIComponent(id)}/cancel`).catch(() => {});
       };
-      opts.signal?.addEventListener('abort', cancel);
+      if (opts.signal?.aborted) {
+        cancel();
+        throw new DOMException('中止しました', 'AbortError');
+      }
+      opts.signal?.addEventListener('abort', cancel, { once: true });
       try {
         const started = Date.now();
         while (id && (it.status === 'in_progress' || it.status === 'queued')) {
@@ -145,6 +154,7 @@ export class Gemini {
       }
     } else {
       it = await this.request<Interaction>('POST', '/interactions', body, opts.signal);
+      opts.onPosted?.();
     }
     const blocks = outputBlocks(it);
     if (!blocks.length) {
@@ -191,7 +201,7 @@ export class Gemini {
       },
       { signal },
     );
-    return toAudioBlob(await mediaBlock(this, blocks, 'audio'));
+    return toAudioBlob(await mediaBlock(this, blocks, 'audio', signal));
   }
 
   async image(prompt: string, aspect: Aspect, refs: { data: Blob }[] = [], signal?: AbortSignal, model = MODELS.image): Promise<Blob> {
@@ -201,7 +211,7 @@ export class Gemini {
       { model, input, response_format: { type: 'image', mime_type: 'image/jpeg', aspect_ratio: aspect, image_size: model === MODELS.imageLite ? '1K' : '2K' } },
       { signal, background: true },
     );
-    const b = await mediaBlock(this, blocks, 'image');
+    const b = await mediaBlock(this, blocks, 'image', signal);
     return new Blob([b.bytes as BlobPart], { type: b.mime || 'image/jpeg' });
   }
 
@@ -221,16 +231,17 @@ export class Gemini {
     if (o.seconds) format.duration = `${o.seconds}s`;
     const body = { model: MODELS.video, input: input.length === 1 ? prompt : input, response_format: format };
     let blocks: Block[];
+    let posted = false;
     try {
-      blocks = await this.interact(body, { signal: o.signal, background: true, onWait: o.onWait });
+      blocks = await this.interact(body, { signal: o.signal, background: true, onWait: o.onWait, onPosted: () => (posted = true) });
     } catch (e) {
-      // if the duration field is rejected, retry once without it
-      if (e instanceof GeminiError && e.status === 400 && /duration/i.test(e.message)) {
+      // if the duration field is rejected before creating a job, retry once without it
+      if (!posted && e instanceof GeminiError && e.status === 400 && /duration/i.test(e.message)) {
         delete format.duration;
         blocks = await this.interact(body, { signal: o.signal, background: true, onWait: o.onWait });
       } else throw e;
     }
-    const b = await mediaBlock(this, blocks, 'video');
+    const b = await mediaBlock(this, blocks, 'video', o.signal);
     return new Blob([b.bytes as BlobPart], { type: 'video/mp4' });
   }
 
@@ -239,7 +250,7 @@ export class Gemini {
       { model: kind === 'clip' ? MODELS.musicClip : MODELS.musicSong, input: prompt },
       { signal, background: true },
     );
-    return toAudioBlob(await mediaBlock(this, blocks, 'audio'));
+    return toAudioBlob(await mediaBlock(this, blocks, 'audio', signal));
   }
 
   /** Download a Files API file (used when the API answers with a uri instead of inline data). */
@@ -266,14 +277,14 @@ export function outputBlocks(it: Interaction): Block[] {
   return fromSteps.length ? fromSteps : (it.outputs ?? []);
 }
 
-async function mediaBlock(g: Gemini, blocks: Block[], type: string): Promise<{ bytes: Uint8Array; mime: string }> {
+async function mediaBlock(g: Gemini, blocks: Block[], type: string, signal?: AbortSignal): Promise<{ bytes: Uint8Array; mime: string }> {
   const b = [...blocks].reverse().find((x) => x.type === type);
   if (!b) {
     const said = blocks.filter((x) => x.type === 'text').map((x) => x.text).join('\n');
     throw new GeminiError(said ? `生成されませんでした: ${said}` : '生成結果が空でした。プロンプトを変えて試してください。', 500);
   }
   if (b.data) return { bytes: base64ToBytes(b.data), mime: b.mime_type ?? '' };
-  if (b.uri) return { bytes: await g.download(b.uri), mime: b.mime_type ?? '' };
+  if (b.uri) return { bytes: await g.download(b.uri, signal), mime: b.mime_type ?? '' };
   throw new GeminiError('生成結果にデータがありませんでした', 500);
 }
 
@@ -291,10 +302,15 @@ export async function blobToBase64(b: Blob): Promise<string> {
 
 function sleep(ms: number, signal?: AbortSignal) {
   return new Promise<void>((resolve, reject) => {
-    const t = setTimeout(resolve, ms);
-    signal?.addEventListener('abort', () => {
+    if (signal?.aborted) return reject(new DOMException('中止しました', 'AbortError'));
+    const onAbort = () => {
       clearTimeout(t);
       reject(new DOMException('中止しました', 'AbortError'));
-    });
+    };
+    const t = setTimeout(() => {
+      signal?.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    signal?.addEventListener('abort', onAbort, { once: true });
   });
 }

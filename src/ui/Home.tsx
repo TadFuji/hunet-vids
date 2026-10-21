@@ -4,6 +4,8 @@ import { explainError, PRICES, VOICES } from '../lib/gemini';
 import { makeProject, makeScene, makeText, THEMES, themeById } from '../lib/model';
 import type { Aspect, Project } from '../lib/model';
 import { deleteProject, listProjects, saveProject } from '../lib/store';
+import { forgetAssetUrl } from '../lib/media';
+import { forgetBuffer } from '../lib/mix';
 import { generateStoryboard, projectFromStoryboard } from '../lib/storyboard';
 import type { Brief } from '../lib/storyboard';
 import { formatTime, layout } from '../lib/timeline';
@@ -249,7 +251,11 @@ export function Home({ gemini, demo, onSettings }: { gemini: Gemini; demo: boole
                   onClick={async (e) => {
                     e.stopPropagation();
                     if (!confirm(`「${p.title}」を削除しますか？（元に戻せません）`)) return;
-                    await deleteProject(p.id);
+                    const removed = await deleteProject(p.id);
+                    for (const aid of removed) {
+                      forgetAssetUrl(aid);
+                      forgetBuffer(aid);
+                    }
                     refresh();
                   }}
                 >

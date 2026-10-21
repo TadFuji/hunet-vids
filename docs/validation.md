@@ -4,12 +4,13 @@
 
 ## 自動テスト（モック・ダミーキー）
 
-最終確認: 2026-10-13（macOS、Node 26、Chrome と Chromium）
+最終確認: 2026-10-21（macOS、Node 26、Chrome と Chromium）
 
 | 種類 | 件数 | 結果 |
 |---|---|---|
-| 単体テスト（`npm test`） | 24 | 成功 |
-| ブラウザテスト（`npm run test:e2e`、Chrome / Chromium） | 13 | 成功 |
+| 単体テスト（`npm test`） | 31 | 成功 |
+| ブラウザテスト（`npm run test:e2e`、Chrome / Chromium） | 14 | 成功 |
+| Lint 検査（`npm run lint`、oxlint） | — | 警告 0 件・エラー 0 件 |
 | 文書リンク検査（`npm run check:docs`） | — | 成功 |
 | 依存関係の脆弱性検査（`npm audit --audit-level=high`） | — | 0 件 |
 

@@ -33,4 +33,4 @@ PLAYWRIGHT_BASE_URL=https://hunet-vids.vercel.app npm run test:e2e
 |---|---|---|
 | 2026-10-13 | 初回公開。新規プロジェクトの初回公開は Vercel の仕様で本番扱いになり、プレビューでの事前確認は行っていない | 公開サイトで体験モードの作成→MP4 書き出し（1920×1080）成功。CSP の下で Gemini API へは届き、他サイトへの通信は遮断されることを確認 |
 | 2026-10-13 | 名称を hunet vids に変更し、ブランド色とロゴを適用 | 公開サイトで設定・一覧・編集画面の表示を確認 |
-| 未公開 | 配信ヘッダーの強化（`X-Frame-Options`、`Cross-Origin-Opener-Policy`、HSTS、`base-uri 'none'`、`payment=()`）と選択欄の読み上げ名。リポジトリには反映済み、公開サイトは未更新 | ローカルの本番相当サーバーでブラウザテスト 11 件成功 |
+| 2026-10-21 | 図解取扱説明書（`/guide.pdf`）、配信ヘッダーの強化（`X-Frame-Options`、`Cross-Origin-Opener-Policy`、HSTS、`base-uri 'none'`、`payment=()`）、生成キャンセル・動画切り替え・バックアップ検査・不要素材削除の強化を本番公開 | 公開サイト（`https://hunet-vids.vercel.app`）でセキュリティヘッダーとブラウザテスト 13 件（＋ローカル 14 件・単体テスト 31 件）成功 |

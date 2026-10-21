@@ -39,6 +39,7 @@ flowchart LR
 | 画像・画像編集 | `gemini-nano-banana-2.1` | 2K、参照画像つき編集 |
 | 動画・人物動画 | `gemini-omni-1.1-flash` | 16:9 / 9:16、`delivery: "uri"` で受け取り Files API から取得 |
 | BGM | `lyria-3-clip-preview` / `lyria-3.5` | 30 秒 / 曲 |
+| 予備（将来拡張用） | `gemini-3.8-flash-lite` / `gemini-nano-banana-lite-1.1` / `gemini-speech-1.1` | `MODELS` に定義（軽量テキスト・軽量画像・文字起こし用） |
 
 時間のかかる生成は `background: true` で依頼して `GET /v1beta/interactions/{id}` を待ちます。中止すると `POST /v1beta/interactions/{id}/cancel` で Google 側の生成も取り消します。詳細と未確認点は [セキュリティ設計](security.md) と [検証記録](validation.md) を参照してください。
 

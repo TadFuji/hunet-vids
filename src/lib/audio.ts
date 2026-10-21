@@ -70,15 +70,40 @@ export function mediaDuration(blob: Blob, kind: 'video' | 'audio'): Promise<numb
     const el = document.createElement(kind);
     el.preload = 'metadata';
     const url = URL.createObjectURL(blob);
+    let settled = false;
+    const done = (d: number) => {
+      if (settled) return;
+      settled = true;
+      el.onloadedmetadata = null;
+      el.ontimeupdate = null;
+      el.ondurationchange = null;
+      el.onerror = null;
+      el.removeAttribute('src');
+      URL.revokeObjectURL(url);
+      resolve(Number.isFinite(d) && d > 0 ? d : 0);
+    };
     el.onloadedmetadata = () => {
-      const d = el.duration;
-      URL.revokeObjectURL(url);
-      resolve(Number.isFinite(d) ? d : 0);
+      if (Number.isFinite(el.duration) && el.duration > 0) {
+        done(el.duration);
+        return;
+      }
+      // MediaRecorder WebM blobs often report Infinity until seeked past the end.
+      const timer = setTimeout(() => done(el.duration), 1500);
+      const finishSeek = () => {
+        if (!Number.isFinite(el.duration)) return;
+        clearTimeout(timer);
+        done(el.duration);
+      };
+      el.ontimeupdate = finishSeek;
+      el.ondurationchange = finishSeek;
+      try {
+        el.currentTime = 1e9;
+      } catch {
+        clearTimeout(timer);
+        done(0);
+      }
     };
-    el.onerror = () => {
-      URL.revokeObjectURL(url);
-      resolve(0);
-    };
+    el.onerror = () => done(0);
     el.src = url;
   });
 }

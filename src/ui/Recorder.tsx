@@ -48,11 +48,18 @@ export function Recorder({ script, onClose, onSaved }: { script: string; onClose
           const cam = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 360 } });
           tracks.current.push(...cam.getTracks());
           videoTrack = composite(scr, cam);
+          tracks.current.push(videoTrack);
         }
       }
-      // the browser's "Stop sharing" button ends the screen track: finish the recording instead of freezing
-      tracks.current.forEach((t) => t.kind === 'video' && t.addEventListener('ended', () => recRef.current?.state === 'recording' && stop()));
-      tracks.current.push(videoTrack);
+      // the browser's "Stop sharing" button ends the screen track: finish the recording or release the preview instead of freezing
+      tracks.current.forEach(
+        (t) =>
+          t.kind === 'video' &&
+          t.addEventListener('ended', () => {
+            if (recRef.current?.state === 'recording') stop();
+            else release();
+          }),
+      );
       setStream(new MediaStream([videoTrack, ...mic.getAudioTracks()]));
     } catch (e) {
       release();
@@ -97,7 +104,13 @@ export function Recorder({ script, onClose, onSaved }: { script: string; onClose
       requestAnimationFrame(tick);
     };
     tick();
-    stopDraw.current = () => (on = false);
+    stopDraw.current = () => {
+      on = false;
+      s.pause();
+      c.pause();
+      s.srcObject = null;
+      c.srcObject = null;
+    };
     return canvas.captureStream(30).getVideoTracks()[0];
   };
 

@@ -5,13 +5,14 @@ import { PRICES } from '../lib/gemini';
 import { makeScene, THEMES, themeById } from '../lib/model';
 import type { Aspect, AssetMeta, Project } from '../lib/model';
 import { addAsset } from '../lib/assets';
-import { assetUrl } from '../lib/media';
+import { assetUrl, forgetAssetUrl } from '../lib/media';
 import { genMusic } from '../lib/generate';
 import { forgetBuffer } from '../lib/mix';
+import { deleteAsset, listProjects, referencedAssets } from '../lib/store';
 import { captionCues, toSrt } from '../lib/timeline';
 import { download } from './download';
 
-function AssetTile({ a, onPick }: { a: AssetMeta; onPick: () => void }) {
+function AssetTile({ a, onPick, onDelete }: { a: AssetMeta; onPick: () => void; onDelete: () => void }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     assetUrl(a.id).then(setUrl);
@@ -22,6 +23,18 @@ function AssetTile({ a, onPick }: { a: AssetMeta; onPick: () => void }) {
       {url && a.kind === 'image' && <img src={url} loading="lazy" />}
       {url && a.kind === 'video' && <video src={url} muted preload="metadata" />}
       {a.kind === 'audio' && <div style={{ display: 'grid', placeItems: 'center', height: '100%', fontSize: 22 }}>♪</div>}
+      <button
+        className="small ghost"
+        aria-label={`${a.name} を削除`}
+        title="この素材を削除"
+        style={{ position: 'absolute', top: 4, right: 4, padding: '0 6px', minHeight: 22, background: 'rgba(0,0,0,0.65)', color: '#fff' }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
+      >
+        ×
+      </button>
       <span className="badge">
         {badge}
         {a.duration ? ` ${a.duration.toFixed(1)}s` : ''}
@@ -61,6 +74,27 @@ export function MediaPanel({ api }: { api: EditorApi }) {
     }));
   };
 
+  const remove = async (a: AssetMeta) => {
+    api.update((p) => {
+      const theme = themeById(p.themeId);
+      return {
+        ...p,
+        music: p.music?.assetId === a.id ? null : p.music,
+        scenes: p.scenes.map((s) =>
+          (s.background.kind === 'image' || s.background.kind === 'video') && s.background.assetId === a.id ? { ...s, background: theme.bg } : s,
+        ),
+      };
+    });
+    const others = (await listProjects()).filter((p) => p.id !== api.project.id);
+    const shared = others.some((p) => referencedAssets(p).has(a.id));
+    if (!shared) {
+      await deleteAsset(a.id);
+      forgetAssetUrl(a.id);
+      forgetBuffer(a.id);
+    }
+    api.refreshAssets();
+  };
+
   const list = api.assets.filter((a) => (filter === 'audio' ? a.kind === 'audio' && a.source !== 'tts' : a.kind !== 'audio')).sort((a, b) => b.createdAt - a.createdAt);
 
   return (
@@ -87,7 +121,7 @@ export function MediaPanel({ api }: { api: EditorApi }) {
       <p className="small-text muted">{filter === 'visual' ? 'クリックすると、選択中のシーンの背景になります。' : 'クリックすると BGM になります。'}</p>
       <div className="asset-grid">
         {list.map((a) => (
-          <AssetTile key={a.id} a={a} onPick={() => pick(a)} />
+          <AssetTile key={a.id} a={a} onPick={() => pick(a)} onDelete={() => remove(a)} />
         ))}
       </div>
       {list.length === 0 && <p className="muted small-text">まだ素材がありません。</p>}
@@ -99,12 +133,18 @@ export function MusicPanel({ api }: { api: EditorApi }) {
   const { project } = api;
   const [prompt, setPrompt] = useState(project.music?.prompt ?? '');
   const [kind, setKind] = useState<'clip' | 'song'>('clip');
-  const [url, setUrl] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState<{ id: string; url: string | null } | null>(null);
   const m = project.music;
+  const musicAssetId = m?.assetId ?? null;
   useEffect(() => {
-    if (m) assetUrl(m.assetId).then(setUrl);
-    else setUrl(null);
-  }, [m?.assetId]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!musicAssetId) return;
+    let active = true;
+    assetUrl(musicAssetId).then((u) => active && setLoaded({ id: musicAssetId, url: u }));
+    return () => {
+      active = false;
+    };
+  }, [musicAssetId]);
+  const url = musicAssetId && loaded?.id === musicAssetId ? loaded.url : null;
   const setM = (p: Partial<NonNullable<Project['music']>>) => api.update((pr) => (pr.music ? { ...pr, music: { ...pr.music, ...p } } : pr));
   const label = 'BGM 生成';
 

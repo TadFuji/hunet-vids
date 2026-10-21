@@ -62,10 +62,52 @@ describe('Gemini.interact', () => {
     expect(calls).toHaveLength(2);
   });
 
-  it('does not retry other errors', async () => {
+  it('does not retry other errors or non-background 400 errors (invalid key, duration, safety)', async () => {
     const calls = fakeFetch(() => ({ status: 429, json: { error: { message: 'quota' } } }));
     await expect(new Gemini('KEY').interact({ model: 'm', input: 'x' }, { background: true })).rejects.toBeInstanceOf(GeminiError);
     expect(calls).toHaveLength(1);
+
+    const keyCalls = fakeFetch(() => ({ status: 400, json: { error: { message: 'API key not valid' } } }));
+    await expect(new Gemini('KEY').interact({ model: 'm', input: 'x' }, { background: true })).rejects.toBeInstanceOf(GeminiError);
+    expect(keyCalls).toHaveLength(1);
+  });
+
+  it('cancels the server-side job even if the signal is aborted while the initial POST is in flight', async () => {
+    const ac = new AbortController();
+    const calls = fakeFetch((c) => {
+      if (c.method === 'POST' && c.url.endsWith('/interactions')) {
+        ac.abort();
+        return { json: { id: 'job-race', status: 'in_progress' } };
+      }
+      return { json: {} };
+    });
+    await expect(new Gemini('KEY').interact({ model: 'm', input: 'x' }, { background: true, signal: ac.signal })).rejects.toThrow();
+    expect(calls.some((c) => c.method === 'POST' && c.url.endsWith('/interactions/job-race/cancel'))).toBe(true);
+  });
+
+  it('video() retries once without duration only when the initial POST is rejected, not during polling', async () => {
+    const calls = fakeFetch((c) => {
+      const fmt = (c.body as { response_format?: { duration?: string } })?.response_format;
+      if (fmt?.duration) return { status: 400, json: { error: { message: 'Invalid duration field' } } };
+      if (c.url.includes(':download')) return { bytes: new Uint8Array([0, 0, 0, 24]) };
+      if (c.url.includes('/files/')) return { json: { state: 'ACTIVE' } };
+      return { json: { id: 'v1', status: 'completed', outputs: [{ type: 'video', uri: 'files/vid123', mime_type: 'video/mp4' }] } };
+    });
+    const blob = await new Gemini('KEY').video('ocean', { aspect: '16:9', resolution: '720p', seconds: 8 });
+    expect(blob.size).toBe(4);
+    expect(calls.filter((c) => c.method === 'POST' && c.url.endsWith('/interactions'))).toHaveLength(2);
+
+    // If a 400 mentioning duration happens during GET polling after job creation, do NOT re-POST
+    const pollCalls = fakeFetch((c) => {
+      if (c.method === 'POST') return { json: { id: 'v2', status: 'in_progress' } };
+      return { status: 400, json: { error: { message: 'duration error after start' } } };
+    });
+    vi.useFakeTimers();
+    const p = new Gemini('KEY').video('ocean', { aspect: '16:9', resolution: '720p', seconds: 8 });
+    const rejected = expect(p).rejects.toThrow('duration error after start');
+    await vi.advanceTimersByTimeAsync(5_000);
+    await rejected;
+    expect(pollCalls.filter((c) => c.method === 'POST')).toHaveLength(1);
   });
 });
 
@@ -75,6 +117,20 @@ describe('Gemini.download', () => {
     const bytes = await new Gemini('KEY').download('https://generativelanguage.googleapis.com/v1beta/files/abc123');
     expect([...bytes]).toEqual([1, 2, 3]);
     expect(calls.at(-1)!.url).toBe('https://generativelanguage.googleapis.com/v1beta/files/abc123:download?alt=media');
+  });
+
+  it('propagates AbortSignal from media methods into download polling', async () => {
+    vi.useFakeTimers();
+    fakeFetch((c) => {
+      if (c.method === 'POST') return { json: { id: 'v1', status: 'completed', outputs: [{ type: 'video', uri: 'files/vid123', mime_type: 'video/mp4' }] } };
+      return { json: { state: 'PROCESSING' } };
+    });
+    const ac = new AbortController();
+    const p = new Gemini('KEY').video('ocean', { aspect: '16:9', resolution: '720p', signal: ac.signal });
+    const rejected = expect(p).rejects.toThrow();
+    await vi.advanceTimersByTimeAsync(1_000);
+    ac.abort();
+    await rejected;
   });
 
   it('refuses to send the key to any other host', async () => {

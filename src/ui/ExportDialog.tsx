@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Project } from '../lib/model';
 import { ASPECT_SIZES } from '../lib/model';
 import { exportMp4 } from '../lib/exporter';
@@ -12,6 +12,12 @@ export function ExportDialog({ project, onClose }: { project: Project; onClose: 
   const [result, setResult] = useState<{ url: string; blob: Blob } | null>(null);
   const [error, setError] = useState('');
   const abort = useRef<AbortController | null>(null);
+  useEffect(
+    () => () => {
+      if (result?.url) URL.revokeObjectURL(result.url);
+    },
+    [result?.url],
+  );
   const { w, h } = ASPECT_SIZES[project.aspect];
   const scale = quality === '1080' ? 1 : 2 / 3;
   const total = layout(project).total;

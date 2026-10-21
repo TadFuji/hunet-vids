@@ -37,7 +37,27 @@ function run<T>(store: string, mode: IDBTransactionMode, fn: (s: IDBObjectStore)
 export const listProjects = () => run<Project[]>('projects', 'readonly', (s) => s.getAll() as IDBRequest<Project[]>);
 export const getProject = (id: string) => run<Project | undefined>('projects', 'readonly', (s) => s.get(id));
 export const saveProject = (p: Project) => run('projects', 'readwrite', (s) => s.put({ ...p, updatedAt: Date.now() }));
-export const deleteProject = (id: string) => run('projects', 'readwrite', (s) => s.delete(id));
+export async function deleteProject(id: string): Promise<string[]> {
+  const target = await getProject(id);
+  await run('projects', 'readwrite', (s) => s.delete(id));
+  const remaining = await listProjects();
+  const used = new Set<string>();
+  for (const p of remaining) {
+    for (const aid of referencedAssets(p)) used.add(aid);
+  }
+  const targetRefs = target ? referencedAssets(target) : new Set<string>();
+  const all = await listAssets();
+  const removed: string[] = [];
+  for (const a of all) {
+    const aid = a.meta.id;
+    if (used.has(aid)) continue;
+    if (remaining.length === 0 || targetRefs.has(aid) || a.meta.source === 'tts') {
+      await deleteAsset(aid);
+      removed.push(aid);
+    }
+  }
+  return removed;
+}
 
 export interface StoredAsset {
   meta: AssetMeta;

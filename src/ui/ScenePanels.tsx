@@ -232,7 +232,7 @@ export function ScenePanel({ api }: { api: EditorApi }) {
                   })
                 }
               >
-                {api.isBusy(`edit:${scene.id}`) && <span className="busy" />}編集
+                {api.isBusy(`edit:${scene.id}`) && <span className="busy" />}編集（約${PRICES.image2K.toFixed(2)}）
               </button>
             </div>
           </>
@@ -403,11 +403,17 @@ export function TextPanel({ api }: { api: EditorApi }) {
 export function VoicePanel({ api }: { api: EditorApi }) {
   const runFor = runner(api);
   const { scene, project } = api;
-  const [url, setUrl] = useState<string | null>(null);
+  const assetId = scene?.narration.assetId ?? null;
+  const [loaded, setLoaded] = useState<{ id: string; url: string | null } | null>(null);
   useEffect(() => {
-    if (scene?.narration.assetId) assetUrl(scene.narration.assetId).then(setUrl);
-    else setUrl(null);
-  }, [scene?.narration.assetId]);
+    if (!assetId) return;
+    let active = true;
+    assetUrl(assetId).then((u) => active && setLoaded({ id: assetId, url: u }));
+    return () => {
+      active = false;
+    };
+  }, [assetId]);
+  const url = assetId && loaded?.id === assetId ? loaded.url : null;
   if (!scene) return <p className="muted">シーンを選んでください。</p>;
   const n = scene.narration;
   const setN = (p: Partial<typeof n>) => api.updateScene(scene.id, (s) => ({ ...s, narration: { ...s.narration, ...p } }));

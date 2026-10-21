@@ -157,6 +157,35 @@ export function drawText(ctx: CanvasRenderingContext2D, W: number, H: number, t:
   ctx.restore();
 }
 
+/** Bounding box of a text item in canvas pixels (accounts for line wrapping, alignment and visibility window). */
+export function textBox(
+  ctx: CanvasRenderingContext2D,
+  t: TextItem,
+  W: number,
+  H: number,
+  local?: number,
+  sceneDur?: number,
+): { x: number; y: number; w: number; h: number } | null {
+  if (local !== undefined && sceneDur !== undefined) {
+    const end = t.end ?? sceneDur;
+    if (local < t.start || local > end) return null;
+  }
+  const px = Math.round(t.size * Math.min(W, H));
+  ctx.save();
+  ctx.font = `${t.weight} ${px}px ${t.font}`;
+  const maxW = t.width * W;
+  const lines = wrapLines(ctx, t.text, maxW);
+  const textW = Math.min(maxW, Math.max(px * 2, ...lines.map((l) => ctx.measureText(l).width)));
+  ctx.restore();
+  const w = textW + px * 0.6;
+  const h = lines.length * px * 1.3 + px * 0.5;
+  const cx = t.x * W;
+  const cy = t.y * H;
+  const left =
+    t.align === 'left' ? cx - maxW / 2 - px * 0.3 : t.align === 'right' ? cx + maxW / 2 - textW - px * 0.3 : cx - w / 2;
+  return { x: left, y: cy - h / 2, w, h };
+}
+
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
@@ -212,11 +241,11 @@ export function mediaNeeds(rp: RenderPlan, t: number, durationOf: (assetId: stri
     if (bg.kind === 'video') out.push({ assetId: bg.assetId, time: videoMediaTime(bg, local, durationOf(bg.assetId)) });
   };
   const local = t - span.start;
-  push(span.scene, local);
   if (span.index > 0 && span.scene.transition !== 'cut' && local < TRANSITION_SECONDS) {
     const prev = rp.spans[span.index - 1].scene;
     push(prev, prev.duration);
   }
+  push(span.scene, local);
   return out;
 }
 
