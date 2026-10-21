@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
-import type { Project, TextItem } from '../lib/model';
-import { drawFrame, plan, videoMediaTime } from '../lib/render';
+import { TRANSITION_SECONDS } from '../lib/model';
+import type { Project } from '../lib/model';
+import { drawFrame, plan, textBox, videoMediaTime } from '../lib/render';
 import { PreviewMedia } from '../lib/media';
 import { loadBuffers, schedule } from '../lib/mix';
 import { audioCtx } from '../lib/audio';
@@ -20,33 +21,50 @@ interface Props {
 /** Live preview: draws with the shared renderer, plays audio through WebAudio and keeps <video> elements in sync. */
 export function Player({ project, time, playing, onTime, onPlaying, selectedTextId, onSelectText, onMoveText }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const media = useMemo(() => new PreviewMedia(), []);
+  const mediaRef = useRef<PreviewMedia | null>(null);
+  const getMedia = () => (mediaRef.current ??= new PreviewMedia());
   const rp = useMemo(() => plan(project, 0.5), [project]);
-  const state = useRef({ project, rp, time, selectedTextId });
-  state.current = { project, rp, time, selectedTextId };
+  const state = useRef({ project, rp, time, selectedTextId, playing });
+  useEffect(() => {
+    state.current = { project, rp, time, selectedTextId, playing };
+  });
+  useEffect(
+    () => () => {
+      mediaRef.current?.videos.forEach((v) => {
+        v.pause();
+        v.removeAttribute('src');
+      });
+    },
+    [],
+  );
 
-  const draw = (t: number) => {
+  const draw = (t: number, cur = state.current) => {
     const c = canvasRef.current;
     if (!c) return;
-    const { project: p, rp: r, selectedTextId: sel } = state.current;
+    const media = getMedia();
+    const { project: p, rp: r, selectedTextId: sel, playing: isPlaying } = cur;
     const ctx = c.getContext('2d')!;
     drawFrame(ctx, p, r, t, media);
     // selection outline for the text being edited
     const span = sceneAt(r.spans, t);
     const item = span?.scene.texts.find((x) => x.id === sel);
-    if (item && !playing) {
-      const b = textBox(item, r.W, r.H);
-      ctx.save();
-      ctx.strokeStyle = '#4f7dff';
-      ctx.setLineDash([6, 4]);
-      ctx.lineWidth = 2;
-      ctx.strokeRect(b.x, b.y, b.w, b.h);
-      ctx.restore();
+    if (item && span && !isPlaying) {
+      const local = Math.min(t - span.start, span.scene.duration);
+      const b = textBox(ctx, item, r.W, r.H, local, span.scene.duration);
+      if (b) {
+        ctx.save();
+        ctx.strokeStyle = '#4f7dff';
+        ctx.setLineDash([6, 4]);
+        ctx.lineWidth = 2;
+        ctx.strokeRect(b.x, b.y, b.w, b.h);
+        ctx.restore();
+      }
     }
   };
 
   // load media used by the project
   useEffect(() => {
+    const media = getMedia();
     media.onReady = () => draw(state.current.time);
     for (const s of project.scenes) {
       const bg = s.background;
@@ -55,20 +73,33 @@ export function Player({ project, time, playing, onTime, onPlaying, selectedText
   }, [project]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** Put each <video> at the right position for time t; play the active one when playing. */
-  const syncVideos = (t: number, play: boolean) => {
-    const { rp: r } = state.current;
+  const syncVideos = (t: number, play: boolean, r = state.current.rp) => {
+    const media = getMedia();
     const span = sceneAt(r.spans, t);
     const active = new Set<string>();
-    if (span && span.scene.background.kind === 'video') {
-      const bg = span.scene.background;
-      const v = media.videos.get(bg.assetId);
-      if (v) {
-        active.add(bg.assetId);
-        const local = Math.min(t - span.start, span.scene.duration);
-        const target = videoMediaTime(bg, local, v.duration);
-        if (Math.abs(v.currentTime - target) > (play ? 0.3 : 0.02)) v.currentTime = target;
-        if (play && v.paused) v.play().catch(() => {});
-        if (!play && !v.paused) v.pause();
+    if (span) {
+      const local = Math.min(t - span.start, span.scene.duration);
+      if (span.scene.background.kind === 'video') {
+        const bg = span.scene.background;
+        const v = media.videos.get(bg.assetId);
+        if (v) {
+          active.add(bg.assetId);
+          const target = videoMediaTime(bg, local, media.duration(bg.assetId));
+          if (Math.abs(v.currentTime - target) > (play ? 0.3 : 0.02)) v.currentTime = target;
+          if (play && v.paused) v.play().catch(() => {});
+          if (!play && !v.paused) v.pause();
+        }
+      }
+      if (span.index > 0 && span.scene.transition !== 'cut' && local < TRANSITION_SECONDS) {
+        const prev = r.spans[span.index - 1].scene;
+        if (prev.background.kind === 'video' && !active.has(prev.background.assetId)) {
+          const pv = media.videos.get(prev.background.assetId);
+          if (pv) {
+            const target = videoMediaTime(prev.background, prev.duration, media.duration(prev.background.assetId));
+            if (!pv.paused) pv.pause();
+            if (Math.abs(pv.currentTime - target) > 0.05) pv.currentTime = target;
+          }
+        }
       }
     }
     media.videos.forEach((v, id) => {
@@ -78,17 +109,21 @@ export function Player({ project, time, playing, onTime, onPlaying, selectedText
 
   // redraw when paused and something changes; also redraw after seeks complete
   useEffect(() => {
+    const media = getMedia();
+    const cur = { project, rp, time, selectedTextId, playing };
+    state.current = cur;
     if (playing) return;
-    syncVideos(time, false);
-    draw(time);
+    syncVideos(time, false, rp);
+    draw(time, cur);
     const redraw = () => draw(state.current.time);
     media.videos.forEach((v) => v.addEventListener('seeked', redraw));
     return () => media.videos.forEach((v) => v.removeEventListener('seeked', redraw));
-  }, [time, project, playing, selectedTextId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [time, project, rp, playing, selectedTextId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // playback loop
   useEffect(() => {
     if (!playing) return;
+    const media = getMedia();
     let raf = 0;
     let stopped = false;
     let nodes: AudioScheduledSourceNode[] = [];
@@ -138,14 +173,18 @@ export function Player({ project, time, playing, onTime, onPlaying, selectedText
   };
   const onDown = (e: React.PointerEvent) => {
     if (playing) return;
+    const c = canvasRef.current;
+    if (!c) return;
+    const ctx = c.getContext('2d')!;
     const span = sceneAt(rp.spans, time);
     if (!span) return;
+    const local = Math.min(time - span.start, span.scene.duration);
     const { x, y } = toNorm(e);
     const px = x * rp.W;
     const py = y * rp.H;
     const hit = [...span.scene.texts].reverse().find((t) => {
-      const b = textBox(t, rp.W, rp.H);
-      return px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h;
+      const b = textBox(ctx, t, rp.W, rp.H, local, span.scene.duration);
+      return b != null && px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h;
     });
     onSelectText(hit?.id ?? null);
     if (hit) {
@@ -172,13 +211,4 @@ export function Player({ project, time, playing, onTime, onPlaying, selectedText
       style={{ cursor: playing ? 'default' : 'crosshair', aspectRatio: `${rp.W} / ${rp.H}` }}
     />
   );
-}
-
-/** Approximate bounding box of a text item in canvas pixels (font size is relative to the short side). */
-function textBox(t: TextItem, W: number, H: number) {
-  const lines = Math.max(1, t.text.split('\n').length);
-  const m = Math.min(W, H);
-  const h = t.size * 1.3 * lines * m + t.size * m * 0.4;
-  const w = t.width * W;
-  return { x: t.x * W - w / 2, y: t.y * H - h / 2, w, h };
 }

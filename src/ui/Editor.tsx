@@ -53,6 +53,8 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
   const [recording, setRecording] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
   const history = useRef<{ past: Project[]; future: Project[]; last: number }>({ past: [], future: [], last: 0 });
 
   const refreshAssets = useCallback(() => listAssets().then((a) => setAssets(a.map((x) => x.meta))), []);
@@ -110,6 +112,8 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
       h.future = [];
       return next;
     });
+    setCanUndo(true);
+    setCanRedo(false);
   }, []);
 
   const updateScene = useCallback((id: string, fn: (s: Scene) => Scene) => update((p) => ({ ...p, scenes: p.scenes.map((s) => (s.id === id ? fn(s) : s)) })), [update]);
@@ -121,6 +125,9 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
     h.future.push(project);
     h.last = 0;
     setProject(prev);
+    if (!prev.scenes.some((s) => s.id === sceneId)) setSceneId(prev.scenes[0]?.id ?? null);
+    setCanUndo(h.past.length > 0);
+    setCanRedo(true);
   };
   const redo = () => {
     const h = history.current;
@@ -129,6 +136,9 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
     h.past.push(project);
     h.last = 0;
     setProject(next);
+    if (!next.scenes.some((s) => s.id === sceneId)) setSceneId(next.scenes[0]?.id ?? null);
+    setCanUndo(true);
+    setCanRedo(h.future.length > 0);
   };
 
   // keys of jobs queued or in flight; a second request with the same key is ignored (prevents double-charging).
@@ -136,18 +146,32 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
   const running = useRef(new Set<string>());
   const active = useRef(0);
   const queue = useRef<(() => void)[]>([]);
+  const controllers = useRef(new Set<AbortController>());
+  useEffect(() => {
+    const q = queue.current;
+    const cs = controllers.current;
+    return () => {
+      q.length = 0;
+      cs.forEach((c) => c.abort());
+      cs.clear();
+    };
+  }, []);
+
   const runJob = useCallback((label: string, fn: JobFn, key: string = label) => {
     if (running.current.has(key)) return;
     running.current.add(key);
-    const job: Job = { id: uid(), key, label, status: 'waiting', detail: '順番待ち', abort: new AbortController() };
+    const abort = new AbortController();
+    controllers.current.add(abort);
+    const job: Job = { id: uid(), key, label, status: 'waiting', detail: '順番待ち', abort };
     setJobs((js) => [...js, job]);
     const patch = (p: Partial<Job>) => setJobs((js) => js.map((j) => (j.id === job.id ? { ...j, ...p } : j)));
     const start = () => {
       active.current++;
       patch({ status: 'running', detail: '' });
-      const work = job.abort.signal.aborted ? Promise.reject(new DOMException('中止しました', 'AbortError')) : fn(job.abort.signal, (detail) => patch({ detail }));
+      const work = abort.signal.aborted ? Promise.reject(new DOMException('中止しました', 'AbortError')) : fn(abort.signal, (detail) => patch({ detail }));
       work
         .finally(() => {
+          controllers.current.delete(abort);
           running.current.delete(key);
           active.current--;
           queue.current.shift()?.();
@@ -158,10 +182,69 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
         })
         .catch((e) => patch({ status: 'error', detail: explainError(e) }));
     };
+    abort.signal.addEventListener(
+      'abort',
+      () => {
+        const idx = queue.current.indexOf(start);
+        if (idx >= 0) {
+          queue.current.splice(idx, 1);
+          controllers.current.delete(abort);
+          running.current.delete(key);
+          patch({ status: 'error', detail: '中止しました' });
+        }
+      },
+      { once: true },
+    );
     if (active.current < MAX_PARALLEL) start();
     else queue.current.push(start);
   }, []);
   const isBusy = useCallback((key: string) => jobs.some((j) => j.key === key && (j.status === 'running' || j.status === 'waiting')), [jobs]);
+
+  const generateMissing = useCallback(
+    (p: Project, what: Partial<AutoGen>, musicPrompt?: string) => {
+      for (const s of p.scenes) {
+        if (what.narration && needsVoice(s)) {
+          runJob(
+            `ナレーション: ${s.title}`,
+            async (signal) => {
+              updateScene(s.id, await genNarration(gemini, s, signal));
+              refreshAssets();
+            },
+            `voice:${s.id}`,
+          );
+        }
+        const hasMedia = s.background.kind === 'image' || s.background.kind === 'video';
+        if (what.visuals && !hasMedia && s.visualPrompt.trim()) {
+          if (s.visualType === 'video') {
+            runJob(
+              `動画生成: ${s.title}`,
+              async (signal, progress) => {
+                updateScene(s.id, await genVideo(gemini, p.aspect, s, { seconds: 8, resolution: '720p', fromImage: false, onWait: (sec) => progress(`生成中… ${sec} 秒経過`) }, signal));
+                refreshAssets();
+              },
+              `video:${s.id}`,
+            );
+          } else {
+            runJob(
+              `画像生成: ${s.title}`,
+              async (signal) => {
+                updateScene(s.id, await genImage(gemini, p.aspect, s, signal));
+                refreshAssets();
+              },
+              `image:${s.id}`,
+            );
+          }
+        }
+      }
+      if (what.music && !p.music) {
+        runJob('BGM 生成', async (signal) => {
+          update(await genMusic(gemini, musicPrompt || 'calm, warm background music, 90 bpm', 'clip', signal));
+          refreshAssets();
+        });
+      }
+    },
+    [gemini, refreshAssets, runJob, update, updateScene],
+  );
 
   // generation requested from the "create" screen
   const autogenDone = useRef(false);
@@ -173,48 +256,11 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
     sessionStorage.removeItem(AUTOGEN_KEY(project.id));
     const auto = JSON.parse(raw) as AutoGen & { musicPrompt?: string };
     generateMissing(project, auto, auto.musicPrompt);
-  }, [project]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const generateMissing = (p: Project, what: Partial<AutoGen>, musicPrompt?: string) => {
-    for (const s of p.scenes) {
-      if (what.narration && needsVoice(s)) {
-        runJob(`ナレーション: ${s.title}`, async (signal) => {
-          updateScene(s.id, await genNarration(gemini, s, signal));
-          refreshAssets();
-        }, `voice:${s.id}`);
-      }
-      const hasMedia = s.background.kind === 'image' || s.background.kind === 'video';
-      if (what.visuals && !hasMedia && s.visualPrompt.trim()) {
-        if (s.visualType === 'video') {
-          runJob(`動画生成: ${s.title}`, async (signal, progress) => {
-            updateScene(s.id, await genVideo(gemini, p.aspect, s, { seconds: 8, resolution: '720p', fromImage: false, onWait: (sec) => progress(`生成中… ${sec} 秒経過`) }, signal));
-            refreshAssets();
-          }, `video:${s.id}`);
-        } else {
-          runJob(`画像生成: ${s.title}`, async (signal) => {
-            updateScene(s.id, await genImage(gemini, p.aspect, s, signal));
-            refreshAssets();
-          }, `image:${s.id}`);
-        }
-      }
-    }
-    if (what.music && !p.music) {
-      runJob('BGM 生成', async (signal) => {
-        update(await genMusic(gemini, musicPrompt || 'calm, warm background music, 90 bpm', 'clip', signal));
-        refreshAssets();
-      });
-    }
-  };
+  }, [project, generateMissing]);
 
   const spans = useMemo(() => (project ? layout(project).spans : []), [project]);
   const total = spans.length ? spans[spans.length - 1].end : 0;
   const scene = project?.scenes.find((s) => s.id === sceneId) ?? null;
-
-  // keep the selected scene in step with the playhead
-  useEffect(() => {
-    const span = sceneAt(spans, time);
-    if (span && playing && span.scene.id !== sceneId) setSceneId(span.scene.id);
-  }, [time, playing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectScene = (id: string) => {
     setSceneId(id);
@@ -305,10 +351,10 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
         </button>
         <input className="title-input" value={project.title} onChange={(e) => update((p) => ({ ...p, title: e.target.value }))} />
         {demo && <span className="small-text" style={{ color: 'var(--warn)' }}>体験モード</span>}
-        <button className="small ghost" onClick={undo} disabled={!history.current.past.length} title="元に戻す（⌘Z）">
+        <button className="small ghost" onClick={undo} disabled={!canUndo} title="元に戻す（⌘Z）">
           ↶ 戻す
         </button>
-        <button className="small ghost" onClick={redo} disabled={!history.current.future.length} title="やり直す（⇧⌘Z）">
+        <button className="small ghost" onClick={redo} disabled={!canRedo} title="やり直す（⇧⌘Z）">
           ↷ やり直す
         </button>
         <span className="grow" />
@@ -377,7 +423,11 @@ export function Editor({ projectId, gemini, demo }: { projectId: string; gemini:
               project={project}
               time={time}
               playing={playing}
-              onTime={setTime}
+              onTime={(t) => {
+                setTime(t);
+                const sp = sceneAt(spans, t);
+                if (sp && sp.scene.id !== sceneId) setSceneId(sp.scene.id);
+              }}
               onPlaying={setPlaying}
               selectedTextId={textId}
               onSelectText={(id) => {

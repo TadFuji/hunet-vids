@@ -16,6 +16,14 @@ export async function assetUrl(id: string): Promise<string | null> {
   return url;
 }
 
+export function forgetAssetUrl(id: string) {
+  const url = urlCache.get(id);
+  if (url) {
+    URL.revokeObjectURL(url);
+    urlCache.delete(id);
+  }
+}
+
 export function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -31,6 +39,7 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
 export class PreviewMedia implements FrameSource {
   images = new Map<string, HTMLImageElement>();
   videos = new Map<string, HTMLVideoElement>();
+  private metaDurations = new Map<string, number>();
   private loading = new Map<string, Promise<void>>();
   onReady: () => void = () => {};
 
@@ -50,6 +59,10 @@ export class PreviewMedia implements FrameSource {
     if (asset.kind === 'image') {
       this.images.set(asset.id, await loadImage(url));
     } else {
+      const stored = await getAsset(asset.id);
+      if (stored?.meta.duration && Number.isFinite(stored.meta.duration) && stored.meta.duration > 0) {
+        this.metaDurations.set(asset.id, stored.meta.duration);
+      }
       const v = document.createElement('video');
       v.muted = true; // audio is played through the WebAudio mixer
       v.playsInline = true;
@@ -65,7 +78,8 @@ export class PreviewMedia implements FrameSource {
   }
 
   duration(assetId: string): number | undefined {
-    return this.videos.get(assetId)?.duration;
+    const d = this.videos.get(assetId)?.duration;
+    return d && Number.isFinite(d) && d > 0 ? d : this.metaDurations.get(assetId);
   }
 
   get(assetId: string): Drawable | null {
@@ -110,11 +124,32 @@ class VideoCursor {
   }
 }
 
+const frameKey = (assetId: string, time: number) => `${assetId}@${Math.round(time * 1000)}`;
+
+function cloneCanvas(src: CanvasImageSource): CanvasImageSource {
+  const w = (src as { width?: number }).width ?? 0;
+  const h = (src as { height?: number }).height ?? 0;
+  if (typeof OffscreenCanvas !== 'undefined' && w > 0 && h > 0) {
+    try {
+      const c = new OffscreenCanvas(w, h);
+      const ctx = c.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(src, 0, 0);
+        return c;
+      }
+    } catch {
+      /* fallback to original canvas in test mocks */
+    }
+  }
+  return src;
+}
+
 /** Export source: decodes video frames exactly with WebCodecs (via mediabunny). */
 export class ExportMedia implements FrameSource {
   private images = new Map<string, ImageBitmap>();
   private cursors = new Map<string, VideoCursor>();
   private frames = new Map<string, CanvasImageSource>();
+  private pinned = new Map<string, CanvasImageSource>();
   private durations = new Map<string, number>();
 
   duration(assetId: string): number | undefined {
@@ -123,39 +158,59 @@ export class ExportMedia implements FrameSource {
 
   static async create(assets: StoredAsset[], W: number, H: number): Promise<ExportMedia> {
     const m = new ExportMedia();
-    for (const a of assets) {
-      if (a.meta.kind === 'image') m.images.set(a.meta.id, await createImageBitmap(a.blob));
-      if (a.meta.kind === 'video') {
-        const input = new Input({ source: new BlobSource(a.blob), formats: ALL_FORMATS });
-        const track = await input.getPrimaryVideoTrack();
-        if (!track) continue;
-        const duration = await track.computeDuration();
-        // decode at a size close to the output to keep memory bounded
-        const scale = Math.min(1, Math.max(W / track.displayWidth, H / track.displayHeight) * 1.15);
-        const sink = new CanvasSink(track, { width: Math.round(track.displayWidth * scale), poolSize: 3 });
-        m.cursors.set(a.meta.id, new VideoCursor(sink, duration));
-        m.durations.set(a.meta.id, duration);
+    try {
+      for (const a of assets) {
+        if (a.meta.kind === 'image') m.images.set(a.meta.id, await createImageBitmap(a.blob));
+        if (a.meta.kind === 'video') {
+          const input = new Input({ source: new BlobSource(a.blob), formats: ALL_FORMATS });
+          const track = await input.getPrimaryVideoTrack();
+          if (!track) continue;
+          const duration = await track.computeDuration();
+          // decode at a size close to the output to keep memory bounded
+          const scale = Math.min(1, Math.max(W / track.displayWidth, H / track.displayHeight) * 1.15);
+          const sink = new CanvasSink(track, { width: Math.round(track.displayWidth * scale), poolSize: 3 });
+          m.cursors.set(a.meta.id, new VideoCursor(sink, duration));
+          m.durations.set(a.meta.id, duration);
+        }
       }
+      return m;
+    } catch (e) {
+      await m.close();
+      throw e;
     }
-    return m;
   }
 
   /** Decode the frames needed for the next drawFrame call. */
   async prepare(needs: { assetId: string; time: number }[]) {
     this.frames.clear();
-    for (const n of needs) {
+    if (needs.length <= 1) this.pinned.clear();
+    for (let i = 0; i < needs.length; i++) {
+      const n = needs[i];
+      const key = frameKey(n.assetId, n.time);
+      const cached = this.pinned.get(key);
+      if (cached) {
+        this.frames.set(key, cached);
+        this.frames.set(n.assetId, cached);
+        continue;
+      }
       const c = this.cursors.get(n.assetId);
       if (!c) continue;
       const f = await c.frameAt(n.time);
-      if (f) this.frames.set(n.assetId, f.canvas);
+      if (f) {
+        const surface = needs.length > 1 && i === 0 ? cloneCanvas(f.canvas) : f.canvas;
+        if (needs.length > 1 && i === 0) this.pinned.set(key, surface);
+        this.frames.set(key, surface);
+        this.frames.set(n.assetId, surface);
+      }
     }
   }
 
-  get(assetId: string): Drawable | null {
-    return (this.images.get(assetId) ?? this.frames.get(assetId) ?? null) as Drawable | null;
+  get(assetId: string, mediaTime = 0): Drawable | null {
+    return (this.images.get(assetId) ?? this.frames.get(frameKey(assetId, mediaTime)) ?? this.frames.get(assetId) ?? null) as Drawable | null;
   }
 
   async close() {
+    this.pinned.clear();
     for (const c of this.cursors.values()) await c.close();
     this.images.forEach((b) => b.close());
   }
