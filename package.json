@@ -1,39 +1,15 @@
 {
-  "name": "hunet-vids",
+  "name": "omni-continue-studio",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "build": "tsc -b && vite build && node scripts/copy-guide.mjs",
     "start": "node server.mjs",
-    "test": "vitest run",
-    "test:e2e": "playwright test",
-    "test:live": "GEMINI_LIVE=1 vitest run src/lib/gemini.live.test.ts",
-    "check": "npm run build && npm test && npm run check:docs",
-    "check:docs": "node scripts/check-docs.mjs",
-    "lint": "oxlint",
-    "preview": "vite preview",
-    "manual": "npm run build && node docs/manual/capture.mjs && node docs/manual/build.mjs && node scripts/copy-guide.mjs"
+    "start:background": "node tools/manage-server.mjs start",
+    "stop": "node tools/manage-server.mjs stop",
+    "status": "node tools/manage-server.mjs status",
+    "test": "node --import ./test/no-network.mjs --test test/*.test.mjs",
+    "check": "node --check tools/build-public.mjs && node --check tools/build-vercel.mjs && node --check tools/prepare-vercel.mjs && node --check tools/vendor-ffmpeg.mjs && node --check dist/runtime.js && node --check dist/app.js && node --check dist/core.js && node --check dist/google.js && node --check dist/narration.js && node --check dist/music.js && node --check dist/api-errors.js && node --check dist/media.js && node --check dist/browser-media.js && node --check dist/local-media-client.js && node --check local-media.mjs && node --check server.mjs && node --check tools/manage-server.mjs"
   },
-  "dependencies": {
-    "mediabunny": "^1.61.4",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
-  },
-  "devDependencies": {
-    "@playwright/test": "1.64.0",
-    "@types/node": "^24.13.3",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.7",
-    "@vitejs/plugin-react": "^6.1.1",
-    "oxlint": "^1.81.0",
-    "typescript": "~6.0.2",
-    "vite": "^8.3.0",
-    "vitest": "^5.0.4"
-  },
-  "description": "hunet vids: browser-only AI video maker on the Gemini API (bring your own key)",
-  "engines": {
-    "node": "^22.12.0 || >=24.0.0"
-  }
+  "engines": { "node": ">=22" }
 }

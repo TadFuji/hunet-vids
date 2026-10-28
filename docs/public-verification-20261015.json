@@ -1,0 +1,111 @@
+{
+  "production": "https://unko-omni.vercel.app",
+  "assets": [
+    {
+      "path": "api-errors.js",
+      "status": 200,
+      "matchesBundle": true
+    },
+    {
+      "path": "app.js",
+      "status": 200,
+      "matchesBundle": true
+    },
+    {
+      "path": "assets/mark.svg",
+      "status": 200,
+      "matchesBundle": true
+    },
+    {
+      "path": "base.css",
+      "status": 200,
+      "matchesBundle": true
+    },
+    {
+      "path": "core.js",
+      "status": 200,
+      "matchesBundle": true
+    },
+    {
+      "path": "google.js",
+      "status": 200,
+      "matchesBundle": true
+    },
+    {
+      "path": "index.html",
+      "status": 200,
+      "matchesBundle": true
+    },
+    {
+      "path": "local-media-client.js",
+      "status": 200,
+      "matchesBundle": true
+    },
+    {
+      "path": "media.js",
+      "status": 200,
+      "matchesBundle": true
+    },
+    {
+      "path": "runtime.js",
+      "status": 200,
+      "matchesBundle": true
+    },
+    {
+      "path": "style.css",
+      "status": 200,
+      "matchesBundle": true
+    }
+  ],
+  "privatePaths": [
+    {
+      "path": "/.env",
+      "status": 404
+    },
+    {
+      "path": "/.runtime/server.json",
+      "status": 404
+    },
+    {
+      "path": "/.git/config",
+      "status": 404
+    },
+    {
+      "path": "/test/fixtures/demo-10.mp4",
+      "status": 404
+    },
+    {
+      "path": "/omni-diagnostics.json",
+      "status": 404
+    },
+    {
+      "path": "/server.mjs",
+      "status": 404
+    },
+    {
+      "path": "/api/local-media/prepare",
+      "status": 404
+    },
+    {
+      "path": "/vercel.json",
+      "status": 404
+    }
+  ],
+  "status": 200,
+  "headers": {
+    "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+    "Referrer-Policy": "no-referrer",
+    "X-Content-Type-Options": "nosniff",
+    "Cache-Control": "no-store",
+    "X-Frame-Options": "DENY",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
+  },
+  "immutableStatus": 200,
+  "immutableAuthentication": true,
+  "keylessPreflight": {
+    "status": 200,
+    "origin": "https://unko-omni.vercel.app",
+    "methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
+    "headers": "content-type,x-goog-api-key"
+  }
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "file": "api-errors.js",
+    "bytes": 9307,
+    "sha256": "548f015d55b07d681724fc39d5f332d950ae0247ff4489c4f0c4e42de1109fe6"
+  },
+  {
+    "file": "app.js",
+    "bytes": 28556,
+    "sha256": "3383f71929a93da5d58723a1032a6fb29428fceced0a493d9a4d29921fb47e49"
+  },
+  {
+    "file": "assets/mark.svg",
+    "bytes": 218,
+    "sha256": "19a3274a65c2654f76ba9764d421a7b53b01c2023d053b52ef50fc7195e74d37"
+  },
+  {
+    "file": "base.css",
+    "bytes": 145,
+    "sha256": "57937f419587ed52c75a5a913eedc38b4f56926db4ffe635f4af4463705df5f1"
+  },
+  {
+    "file": "core.js",
+    "bytes": 29834,
+    "sha256": "1f219f13d570e78c63aee09c13a51de8731d04cbcb9383926077960e4c5462e6"
+  },
+  {
+    "file": "google.js",
+    "bytes": 16795,
+    "sha256": "2ba38e689c6ee0a4a552819ba759b6fc187a2477e0dcec6f58b25fe02cbeaebc"
+  },
+  {
+    "file": "index.html",
+    "bytes": 16766,
+    "sha256": "0548e8986828e8922ee4b07880bfeebd36562f2f0e9c7d3276f593514d713903"
+  },
+  {
+    "file": "local-media-client.js",
+    "bytes": 359,
+    "sha256": "a312f2170cc4234c441a4cac8bb7136be17d394d19f2782b9ebf97a4c6f1db2e"
+  },
+  {
+    "file": "media.js",
+    "bytes": 2433,
+    "sha256": "332f0ffa1876d14665425e54db62346b6ba2541edace1aeb038bf55b79a573f8"
+  },
+  {
+    "file": "runtime.js",
+    "bytes": 40,
+    "sha256": "8188ff6394c0b23c8b6187594ce3b752e22cb502e7646113b8cff0fc068223a0"
+  },
+  {
+    "file": "style.css",
+    "bytes": 16696,
+    "sha256": "bd66e06f4e2d29d636a6e39846c05e04e3a5a420ecc6cce56760fdf1dc663249"
+  },
+  {
+    "file": "vercel.json",
+    "bytes": 1034,
+    "sha256": "eaaeb542ba206deb0d85ea246f5a368061238671fbb201cfdf88b8077cf40d4b"
+  }
+]

@@ -17,7 +17,7 @@ jobs:
   check:
     name: Check (Node ${{ matrix.node }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -29,19 +29,23 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
-          cache: npm
-      - run: npm ci --ignore-scripts
+      - name: Ensure ffmpeg and ffprobe are available at pinned path
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+          sudo mkdir -p /opt/homebrew/bin
+          sudo ln -sf /usr/bin/ffmpeg /opt/homebrew/bin/ffmpeg
+          sudo ln -sf /usr/bin/ffprobe /opt/homebrew/bin/ffprobe
+      - name: Prepare pinned ffmpeg.wasm vendor runtime
+        run: node tools/vendor-ffmpeg.mjs
       - run: npm run check
-      - name: Ensure the build did not change tracked files
+      - run: npm test
+      - name: Ensure checks did not modify tracked files
         run: git diff --exit-code
-      - run: npm audit --audit-level=high
 
   browser:
     name: Browser tests (Chromium)
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    env:
-      PLAYWRIGHT_BROWSER_CHANNEL: chromium
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -49,21 +53,16 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: npx --no-install playwright install --with-deps chromium
-      - run: npm run build
-      - run: npm run test:e2e
-      - name: Upload failed mock-test diagnostics
-        if: failure()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: playwright-failure
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 3
-          if-no-files-found: ignore
+      - name: Ensure ffmpeg and ffprobe are available at pinned path
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+          sudo mkdir -p /opt/homebrew/bin
+          sudo ln -sf /usr/bin/ffmpeg /opt/homebrew/bin/ffmpeg
+          sudo ln -sf /usr/bin/ffprobe /opt/homebrew/bin/ffprobe
+      - name: Prepare pinned ffmpeg.wasm vendor runtime
+        run: node tools/vendor-ffmpeg.mjs
+      - name: Run UI, browser media, narration, music, and public bundle tests
+        run: node --import ./test/no-network.mjs --test test/ui.test.mjs test/browser-media.test.mjs test/narration.test.mjs test/music.test.mjs test/public-build.test.mjs test/vercel-sources.test.mjs
 
   secrets:
     name: Secret scan (full history)

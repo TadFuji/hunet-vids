@@ -1,8 +1,10 @@
 # Security-sensitive changes should receive an explicit maintainer review.
 * @TadFuji
-/src/lib/gemini.ts @TadFuji
-/src/lib/store.ts @TadFuji
-/src/lib/backup.ts @TadFuji
+/dist/google.js @TadFuji
+/dist/narration.js @TadFuji
+/dist/music.js @TadFuji
+/dist/core.js @TadFuji
+/tools/ @TadFuji
 /vercel.json @TadFuji
 /server.mjs @TadFuji
 /.github/ @TadFuji

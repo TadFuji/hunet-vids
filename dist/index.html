@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Gemini Omni 1.1 Flashで、文章から動画を生成し、長さを選んで続きをつくる制作スタジオ。">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <title>Omni Continue Studio — 短い映像から、続きを。</title>
+  <link rel="icon" href="./assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Omni Continue Studio ホーム"><img src="./assets/mark.svg" width="33" height="33" alt=""><span>omni <b>continue</b><small>動画制作スタジオ</small></span></a>
+    <div class="header-right"><span class="model-label">Gemini Omni 1.1 Flash</span><span class="badge live">実API · 有料</span><button id="reset" class="quiet">新しく始める</button></div>
+  </header>
+
+  <main>
+    <section class="intro"><div><span class="eyebrow">想像を、少しずつ映像に。</span><h1>短い映像から、続きを。</h1><p>まず短い映像をつくって、見て、次のシーンへ。<br class="mobile-break">あなたの言葉で、生成・延長して、物語をつなげよう。</p></div><div class="video-options"><div class="intro-spec"><label for="aspect-ratio">画角<select id="aspect-ratio" aria-describedby="settings-hint"><option value="16:9">16:9 横</option><option value="9:16">9:16 縦</option></select></label><label for="resolution">動画の解像度<select id="resolution" aria-describedby="resolution-hint settings-hint"><option value="360p" selected>360p · 下書き</option><option value="720p">720p · 標準</option><option value="1080p">1080p · アップスケール</option><option value="4k">4K · アップスケール</option></select></label><span>この展開 最大40秒</span></div><p id="settings-hint" class="settings-hint">最初の生成に使う動画設定です。横16:9・縦9:16を選べます。</p><p id="resolution-hint" class="settings-hint">360pは下書き向け。Googleは720pの約1/3の生成コストと案内しています。総額は利用量によります。</p></div></section>
+
+    <p id="public-profile-note" class="hint warning-text" hidden>公開版：文章から3〜10秒の動画を生成し、同じ生成履歴を使って最大40秒まで延長できます。動画の取り込み、1・2秒への短縮、ローカル接続には対応していません。</p>
+
+    <aside class="manual-notice" aria-label="利用ガイドとベータ版の注意"><a href="./manuals/omni-continue-user-guide-20261016.pdf" download="omni-continue-user-guide-20261016.pdf">利用ガイドをダウンロード（PDF・9ページ）</a><p>既存動画をアップロードして追加・延長する機能はベータ版で、うまくいかないことが多い状態です。元動画を別に保管し、ガイドの対応条件と確認手順をお読みください。</p></aside>
+
+    <div class="workspace">
+      <aside class="composer">
+        <section class="connection">
+          <div class="section-heading"><h2>接続</h2><span id="key-state">キー未入力</span></div>
+          <div id="key-panel">
+            <form id="key-form" autocomplete="off"><label for="api-key">Gemini API キー</label><div class="key-row"><input id="api-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="none" placeholder="ご本人のキーを入力"></div></form>
+            <button id="forget-key" class="text-button" type="button" hidden>キーをメモリから消去</button>
+            <p class="hint">キーは入力中はこのタブのメモリ内だけで保持し、Google公式APIに直接送信します。アプリのサーバーには送りません。再読み込みすると消えます。</p>
+          </div>
+        </section>
+
+        <section class="source-picker"><h2>最初の動画</h2><div class="source-switch"><button id="source-text" type="button" aria-pressed="true">文章から生成</button><button id="source-upload" type="button" aria-pressed="false">動画を取り込む</button></div><div id="upload-panel" hidden><label id="source-file-label" for="source-file">元動画を選ぶ（200MiB・20分以下）</label><input id="source-file" type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm"><p id="upload-processing-description" class="hint">選択時はこのMacのローカルサーバーで準備するだけで、Googleには送信しません。一時ファイルは処理後に消去します。元ファイルは変更しません。切り出し・接続はH.264/AACへ再エンコードするため、画質や音質が変わる場合があります。</p><p id="upload-summary" class="hint" role="status"></p><a id="tail-download" hidden>↓ 元動画から保存した末尾を確認・保存</a><p class="hint">延長ボタンを押すと、初回は末尾10秒以下の動画と指示をGoogleへ直接送信します。通常は前回のモデル出力をGoogle側で参照します。取り込んだ動画や上限付近の延長では、延長の元になる動画の末尾10秒以下を送り直します。ローカルの前半は送信しません。Filesは最大48時間、生成履歴はGoogle側の保存条件が適用されます。</p><p class="hint warning-text">持ち込み動画への新しいセリフ追加は非対応です。EEA・スイス・英国では持ち込み動画の延長を利用できません。つなぎ目の映像・音声の自然さや完全な保持は保証しません。</p></div></section>
+        <section id="browser-media-panel" class="connection" hidden><p id="browser-media-state" class="hint" role="status"></p><button id="cancel-media" type="button" class="quiet" hidden>端末内の処理を中止</button><p class="hint">中止するのは動画の加工だけです。Google側の生成の取り消し・返金ではありません。加工に失敗しても生成を自動再送しません。</p></section>
+        <form id="generate-form" class="prompt-form">
+          <div class="section-heading"><h2 id="prompt-title">最初の10秒をつくる</h2><span id="target-seconds">0 → 10秒</span></div>
+          <div id="extension-options"><label id="duration-label" for="extension-seconds">動画の長さ</label><select id="extension-seconds" aria-describedby="planned-length duration-hint duration-caveat"><option value="10" selected>10秒</option><option value="9">9秒</option><option value="8">8秒</option><option value="7">7秒</option><option value="6">6秒</option><option value="5">5秒</option><option value="4">4秒</option><option value="3">3秒</option></select><p id="planned-length" class="planned-length" aria-live="polite">完成予定：10秒 / 最大40秒</p><p id="duration-hint" class="hint">選んだ秒数をGoogleへ指定します。予定の長さと実際の再生時間は別に確認します。</p><p id="duration-caveat" class="hint warning-text" hidden></p></div><div id="branch-note" class="branch-note" hidden></div>
+          <label id="prompt-label" for="prompt">どんなシーンから始めますか？</label>
+          <textarea id="prompt" maxlength="4000" rows="6" placeholder="例：朝霧に包まれた湖。小さな木の舟がゆっくり進む。カメラは水面すれすれを追いかけ、鳥の声と穏やかな水音が聞こえる。"></textarea>
+          <div class="prompt-bottom"><button id="example" type="button" class="text-button">例文を入れる</button><span id="char-count">0 / 4,000</span></div>
+          <div class="prompt-tip"><span aria-hidden="true">✦</span><p>被写体・動き・カメラ・音を添えると、イメージを伝えやすくなります。</p></div>
+          <button id="generate" class="primary" type="submit"><span id="generate-label">最初の10秒を生成</span><span aria-hidden="true">↗</span></button>
+          <p id="action-hint" class="action-hint">Gemini の API キーを入力してください</p>
+        </form>
+      </aside>
+
+      <section class="editor" aria-label="動画プレビューとタイムライン">
+        <div class="preview-heading"><div><span class="eyebrow">プレビュー</span><h2 id="preview-title">最初のシーンを待っています</h2></div><span id="preview-spec" class="subtle">要求設定：横 16:9 · 360p</span></div>
+        <div id="video-screen" class="screen">
+          <div id="empty-state" class="empty-state"><div class="landscape" aria-hidden="true"><div class="sun"></div><div class="mountain back"></div><div class="mountain front"></div><div class="lake"></div></div><div class="empty-copy"><span class="play-symbol" aria-hidden="true">▷</span><h3>ここから、物語が始まる。</h3><p>左で長さを選び、最初のシーンを描きましょう。</p></div><span class="preview-watermark">イメージ図 · 生成動画ではありません</span></div>
+          <video id="video" controls playsinline preload="metadata" tabindex="0" hidden aria-label="選択した動画"></video>
+          <div id="working-overlay" class="working-overlay" hidden><span class="spinner" aria-hidden="true"></span><p id="working-text">生成しています</p><small>このタブを開いたままお待ちください</small></div>
+        </div>
+        <div class="playback-tools"><span id="view-state">生成後、動画情報の確認が完了すると、続きをつくれます。</span><a id="download" class="download-button" hidden>↓ この版をダウンロード</a></div>
+        <p id="playback-notice" class="hint warning-text playback-notice" role="status" hidden></p>
+        <p id="preview-dimensions" class="dimension-readout" hidden></p>
+        <p id="duration-readout" class="duration-readout" hidden></p>
+        <a id="raw-download" class="raw-download" hidden>↓ 加工前のAI出力を保存</a>
+
+        <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+        <div id="recovery" class="recovery" hidden><h3>同じ処理の結果を確認する</h3><p id="recovery-description">新しい生成は送信しません。結果不明の処理がある間は、生成ボタンを止めています。</p><label id="recovery-label" for="recovery-id" hidden>Google AI Studioのログで確認した生成ID</label><input id="recovery-id" placeholder="生成ID（APIキーは入力しないでください）" autocomplete="off" hidden><div class="recovery-actions"><button id="recheck" class="secondary" hidden>保存済み動画を再計測・仕上げ</button><button id="resume" class="secondary">同じ結果を再取得（新規生成なし）</button><button id="abandon" class="text-button">確認を終了し、新規生成を選ぶ…</button></div><a id="pending-model-download" hidden>↓ 受信済みのAI部分を保存</a><br><a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer">Google AI Studioを開く ↗</a></div>
+        <div id="diagnostics-panel" class="diagnostics-panel" hidden><a id="diagnostic-download">↓ 診断情報を保存</a><p>処理状態・秒数・送信設定・安全なエラー種別などの確認用情報です。キー・プロンプト・生成ID・URL・動画本文は含みません。外部へ自動送信しません。</p></div>
+        <section id="inspections" class="inspections" hidden><div class="section-heading"><h2>確認用の動画</h2><span id="inspection-count">0本</span></div><p class="hint">完成版とは別に保持しています。必要な動画は、このタブを閉じる前に保存してください。</p><div id="inspection-list" class="inspection-list"></div></section>
+
+        <section id="narration-section" class="narration-section" aria-label="ナレーション・音声スタジオ">
+          <div class="section-heading">
+            <div><h2>ナレーション・音声スタジオ（やさしい音声づくり統合）</h2><p class="hint">Gemini 3.8 Flash TTSで自由度の高いナレーションや2人の対話音声をつくり、選択中の動画の元音声と好きな音量バランスで合成できます。</p></div>
+            <span id="narration-estimate" class="narration-estimate">文字数 0文字 · 推定 約0秒</span>
+          </div>
+
+          <div class="narration-top-bar">
+            <div class="source-switch narration-type-switch">
+              <button id="narration-mode-single" type="button" aria-pressed="true">1人で読み上げる</button>
+              <button id="narration-mode-dialogue" type="button" aria-pressed="false">2人の会話・かけあい</button>
+            </div>
+            <label class="narration-field">音声モデル<select id="narration-model"></select></label>
+          </div>
+
+          <div id="narration-single-panel" class="narration-panel">
+            <div class="narration-grid-3">
+              <label class="narration-field">声の種類（30種＋拡張・作成）
+                <div class="voice-select-row">
+                  <select id="narration-voice"></select>
+                  <button id="narration-voice-preview" type="button" class="secondary">試聴</button>
+                </div>
+              </label>
+              <label class="narration-field">話し方・雰囲気（21種）<select id="narration-feeling"></select></label>
+              <label class="narration-field">話す速さ<select id="narration-speed"></select></label>
+            </div>
+            <div class="narration-grid-3">
+              <label class="narration-field">追加の話し方指示（任意）<input id="narration-custom-style" type="text" placeholder="例：ニュースキャスターのように明瞭に、語尾を優しく"></label>
+              <label class="narration-field">冒頭の無音<select id="narration-lead-silence"><option value="0" selected>0秒（なし）</option><option value="0.5">0.5秒</option><option value="1">1秒</option><option value="2">2秒</option><option value="3">3秒</option></select></label>
+              <label class="narration-field">末尾の無音<select id="narration-trail-silence"><option value="0" selected>0秒（なし）</option><option value="0.5">0.5秒</option><option value="1">1秒</option><option value="2">2秒</option><option value="3">3秒</option></select></label>
+            </div>
+            <div class="narration-script-header">
+              <label for="narration-text">読み上げる原稿</label>
+              <button id="narration-insert-style" type="button" class="text-button">＋ 文中に「ここから話し方を変える」見出しを挿入</button>
+            </div>
+            <textarea id="narration-text" rows="4" maxlength="5000" placeholder="ここにナレーション原稿を入力します。下のボタンで間（ポーズ）や息づかい、笑みなどの表現タグを入れられます。">朝霧に包まれた静かな湖。<short pause> 小さな木の舟が、ゆっくりと前へ進んでいきます。</textarea>
+          </div>
+
+          <div id="narration-dialogue-panel" class="narration-panel" hidden>
+            <div class="narration-grid-2">
+              <div class="speaker-card">
+                <strong>話し手 1</strong>
+                <label class="narration-field">表示名<input id="narration-sp1-name" type="text" value="話し手A"></label>
+                <label class="narration-field">声<select id="narration-sp1-voice"></select></label>
+                <label class="narration-field">話し方の特徴<input id="narration-sp1-style" type="text" placeholder="例：落ち着いた案内役として"></label>
+              </div>
+              <div class="speaker-card">
+                <strong>話し手 2</strong>
+                <label class="narration-field">表示名<input id="narration-sp2-name" type="text" value="話し手B"></label>
+                <label class="narration-field">声<select id="narration-sp2-voice"></select></label>
+                <label class="narration-field">話し方の特徴<input id="narration-sp2-style" type="text" placeholder="例：明るく好奇心旺盛に"></label>
+              </div>
+            </div>
+            <div class="narration-script-header">
+              <span>会話のターン（順番に読み上げます）</span>
+              <div class="dialogue-toolbar">
+                <button id="narration-insert-backchannel" type="button" class="text-button">＋ 相づち（|うん、なるほど|）を挿入</button>
+                <button id="narration-add-turn" type="button" class="secondary">＋ セリフを追加</button>
+              </div>
+            </div>
+            <div id="narration-turns" class="narration-turns"></div>
+          </div>
+
+          <div class="narration-tags-box">
+            <div class="narration-script-header"><span>よく使う表現タグ（クリックで原稿に挿入）</span></div>
+            <div id="narration-common-tags" class="tag-chip-row"></div>
+            <details id="narration-all-tags-details" class="narration-subdetails">
+              <summary>全36種類の表現タグ一覧を開く（間・呼吸・笑い・感情・声の質感・効果音・速さ）</summary>
+              <div id="narration-all-tags" class="all-tags-grid"></div>
+            </details>
+          </div>
+
+          <div class="narration-advanced-drawers">
+            <details id="narration-catalog-details" class="narration-subdetails">
+              <summary>拡張音声ライブラリ（約2,000種類の声から検索・お気に入り）</summary>
+              <div class="catalog-controls">
+                <button id="narration-load-catalog" type="button" class="secondary">Googleから拡張音声一覧を取得</button>
+                <input id="narration-catalog-search" type="text" placeholder="名前や特徴で検索（例：Warm, Bright, Ja）">
+                <select id="narration-catalog-gender"><option value="all">すべて</option><option value="female">女性</option><option value="male">男性</option><option value="favorites">★ お気に入りのみ</option></select>
+              </div>
+              <div id="narration-catalog-list" class="catalog-voice-list"></div>
+            </details>
+
+            <details id="narration-design-details" class="narration-subdetails">
+              <summary>声をつくる（Voice Design：言葉の説明からオリジナルの声を作成）</summary>
+              <div class="narration-grid-2">
+                <label class="narration-field">新しい声の名前<input id="narration-design-name" type="text" placeholder="例：落ち着いた映画ナレーター"></label>
+                <label class="narration-field">声の特徴の説明（20文字以上推奨）<input id="narration-design-prompt" type="text" placeholder="例：深みのある穏やかな大人の声。ドキュメンタリー番組のように丁寧で安心感がある話し方。"></label>
+              </div>
+              <div class="catalog-controls">
+                <label class="check-label"><input id="narration-design-store" type="checkbox"><span>Google側に保存して次回も使えるようにする（未チェックならこのタブ限定）</span></label>
+                <button id="narration-design-create" type="button" class="secondary">この説明で声を作成</button>
+              </div>
+            </details>
+
+            <details id="narration-clone-details" class="narration-subdetails">
+              <summary>声を複製する（Voice Replication：サンプル音声＋同意音声から声を登録）</summary>
+              <p class="hint">ご本人のサンプル音声（10〜30秒）と、下の同意文を読み上げた同意音声ファイルを選択すると、ブラウザ内で24kHzモノラルWAVへ自動変換して登録できます。</p>
+              <p id="narration-consent-quote" class="consent-quote"></p>
+              <div class="narration-grid-3">
+                <label class="narration-field">複製する声の名前<input id="narration-clone-name" type="text" placeholder="例：自分のナレーション音声"></label>
+                <label class="narration-field">① サンプル音声（10〜30秒）<input id="narration-clone-sample-file" type="file" accept="audio/*,.wav,.mp3,.m4a,.webm"><small id="narration-clone-sample-info" class="hint">未選択</small></label>
+                <label class="narration-field">② 同意文の読み上げ音声<input id="narration-clone-consent-file" type="file" accept="audio/*,.wav,.mp3,.m4a,.webm"><small id="narration-clone-consent-info" class="hint">未選択</small></label>
+              </div>
+              <div class="catalog-controls">
+                <label class="check-label"><input id="narration-clone-store" type="checkbox"><span>Google側に保存する（未チェックならこのタブ限定）</span></label>
+                <button id="narration-clone-create" type="button" class="secondary">サンプルと同意音声から声を複製</button>
+              </div>
+              <div id="narration-custom-voices-list" class="catalog-voice-list"></div>
+            </details>
+          </div>
+
+          <div class="narration-action-row">
+            <button id="narration-preview-10s" type="button" class="secondary">最初の約10秒だけ試聴生成</button>
+            <button id="narration-generate" type="button" class="primary">ナレーション音声を生成 ↗</button>
+          </div>
+
+          <div id="narration-status" class="status" role="status" aria-live="polite" hidden></div>
+
+          <div id="narration-result-panel" class="narration-result-panel" hidden>
+            <div class="section-heading">
+              <h3>生成したナレーションと動画への合成</h3>
+              <a id="narration-wav-download" class="download-button" hidden>↓ ナレーションWAVを保存</a>
+            </div>
+            <div class="narration-player-row">
+              <label class="narration-field">生成した音声一覧<select id="narration-clips-select"></select></label>
+              <audio id="narration-audio" controls preload="metadata"></audio>
+            </div>
+            <div class="narration-grid-3 narration-mix-controls">
+              <label class="narration-field">入れる開始位置（秒）
+                <div class="voice-select-row">
+                  <input id="narration-start-seconds" type="number" min="0" max="1240" step="0.1" value="0">
+                  <button id="narration-use-current-time" type="button" class="quiet">現在の再生位置</button>
+                </div>
+              </label>
+              <label class="narration-field">元の動画の音量：<span id="narration-video-volume-label">60%</span>
+                <input id="narration-video-volume" type="range" min="0" max="200" step="5" value="60">
+              </label>
+              <label class="narration-field">ナレーションの音量：<span id="narration-voice-volume-label">100%</span>
+                <input id="narration-voice-volume" type="range" min="10" max="200" step="5" value="100">
+              </label>
+            </div>
+            <p id="narration-mix-hint" class="hint"></p>
+            <div class="narration-mix-actions">
+              <button id="narration-apply" type="button" class="primary">選択中の動画にナレーションを重ねる</button>
+              <button id="narration-layer" type="button" class="secondary" hidden>今の動画音声にさらに追加で重ねる</button>
+              <button id="narration-restore" type="button" class="quiet" hidden>元の動画音声に戻す</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="music-section" class="narration-section music-section" aria-label="音楽・BGMスタジオ（Lyria 3.5）">
+          <div class="section-heading">
+            <div>
+              <h2>音楽・BGMスタジオ（Lyria 3.5）</h2>
+              <p class="hint">Google の最新音楽生成AI（Lyria 3.5 / Lyria 3 Clip）を使い、映像に合うBGM（歌なしインスト）や歌詞・構成つきのボーカル曲を作曲して動画に重ねられます。</p>
+            </div>
+            <span id="music-estimate" class="narration-estimate">目安: 1曲あたり 約$0.08（約12.0円） · 最大180秒</span>
+          </div>
+
+          <div class="narration-top-bar">
+            <div class="source-switch narration-type-switch" role="tablist" aria-label="音楽の種類">
+              <button id="music-mode-bgm" type="button" role="tab" aria-selected="true" aria-pressed="true" class="active">BGM・インスト（歌なし背景音楽）</button>
+              <button id="music-mode-vocal" type="button" role="tab" aria-selected="false" aria-pressed="false">ボーカル曲（歌入り・歌詞指定）</button>
+            </div>
+            <label class="narration-field">音楽生成モデル
+              <select id="music-model"></select>
+            </label>
+          </div>
+
+          <div class="narration-panel">
+            <div class="narration-grid-3">
+              <label class="narration-field">ジャンル・音楽スタイル
+                <select id="music-genre"></select>
+              </label>
+              <label class="narration-field">雰囲気・ムード
+                <select id="music-mood"></select>
+              </label>
+              <label class="narration-field">テンポ感
+                <select id="music-tempo"></select>
+              </label>
+            </div>
+
+            <div class="narration-grid-3">
+              <label class="narration-field">BPM（任意・40〜220）
+                <input id="music-bpm" type="number" min="40" max="220" step="1" placeholder="例: 120">
+              </label>
+              <label class="narration-field">キー・調性（任意）
+                <select id="music-key"></select>
+              </label>
+              <label class="narration-field">目標の長さ（秒・10〜180）
+                <div class="voice-select-row">
+                  <input id="music-duration" type="number" min="10" max="180" step="5" value="30">
+                  <button id="music-sync-video-duration" type="button" class="quiet" title="選択中の動画の長さに合わせる">動画に合わせる</button>
+                </div>
+              </label>
+            </div>
+
+            <div class="narration-grid-2">
+              <label class="narration-field">終わり方（エンディング）
+                <select id="music-ending"></select>
+              </label>
+              <div id="music-bgm-space-wrap" class="narration-field">
+                <span>ナレーションとのバランス</span>
+                <label class="check-label"><input id="music-bgm-space" type="checkbox" checked><span>声（ナレーション・セリフ）が聞き取りやすいよう中音域をすっきりさせる</span></label>
+              </div>
+            </div>
+
+            <div class="narration-script-header">
+              <span>主な楽器編成（クリックで複数選択・解除）</span>
+            </div>
+            <div id="music-instruments" class="tag-chip-row"></div>
+
+            <div class="narration-script-header">
+              <label for="music-prompt">曲のイメージ・展開・シーンの説明</label>
+              <button id="music-example" type="button" class="quiet">例文を入れる</button>
+            </div>
+            <textarea id="music-prompt" rows="3" maxlength="4000" placeholder="例：朝霧の湖を小さな木の舟がゆっくり進んでいく映像に合う、透明感のあるピアノと柔らかな弦楽のシネマティックBGM。後半に向けて少しずつ視界が開けていくような温かい盛り上がり。"></textarea>
+
+            <div id="music-vocal-panel" class="music-subpanel" hidden>
+              <div class="narration-grid-2">
+                <label class="narration-field">ボーカルの声質・スタイル
+                  <select id="music-vocal-type"></select>
+                </label>
+                <div class="narration-field">
+                  <span>曲の構成タグ（クリックで歌詞欄へ挿入）</span>
+                  <div id="music-section-tags" class="tag-chip-row"></div>
+                </div>
+              </div>
+              <div class="narration-script-header">
+                <label for="music-lyrics">歌詞・セクション構成（[Intro] [Verse] [Chorus] [Outro] など）</label>
+                <button id="music-lyrics-example" type="button" class="quiet">歌詞の例文を入れる</button>
+              </div>
+              <textarea id="music-lyrics" rows="6" maxlength="4000" placeholder="[Intro]&#10;（静かなピアノ）&#10;&#10;[Verse 1]&#10;朝霧の向こうに 光が差し込んで&#10;&#10;[Chorus]&#10;まだ見ぬ景色へ 漕ぎ出そう"></textarea>
+            </div>
+
+            <details class="narration-subdetails">
+              <summary>映像の画面や画像から音楽をイメージさせる（マルチモーダル作曲・任意）</summary>
+              <p class="hint">Lyria 3.5 は画像や動画フレームの色合い・情景を読み取って、その雰囲気に合った音楽を作曲できます。</p>
+              <div class="catalog-controls">
+                <button id="music-capture-frame" type="button" class="secondary">表示中の動画の現在の画面を取り込む</button>
+                <label class="file-picker secondary" for="music-image-file">画像ファイルを選ぶ（JPEG/PNG/WebP）</label>
+                <input id="music-image-file" type="file" accept="image/jpeg,image/png,image/webp">
+                <button id="music-clear-image" type="button" class="quiet" hidden>画像参照を解除</button>
+              </div>
+              <p id="music-image-status" class="hint">未設定（必要に応じて動画の現在フレームや画像を音楽のインスピレーションとして添付できます）</p>
+            </details>
+          </div>
+
+          <div class="narration-action-row">
+            <button id="music-generate" type="button" class="primary">BGM・インスト音楽を生成する（Lyria 3.5）</button>
+          </div>
+
+          <p id="music-status" class="status" role="status" hidden></p>
+          <p id="music-error" class="status error" role="alert" hidden></p>
+
+          <div id="music-result-panel" class="narration-result-panel" hidden>
+            <div class="section-heading">
+              <h3>生成した音楽の試聴・動画への合成</h3>
+              <a id="music-download" class="secondary" download="omni-music.mp3">音楽ファイルを保存</a>
+            </div>
+            <div class="narration-player-row">
+              <label class="narration-field">作成した音楽トラック
+                <select id="music-track-select"></select>
+              </label>
+              <audio id="music-audio" controls preload="metadata"></audio>
+            </div>
+
+            <details id="music-generated-lyrics-box" class="narration-subdetails" hidden>
+              <summary>Lyria が生成した歌詞・楽曲構成メモを表示</summary>
+              <pre id="music-generated-lyrics" class="consent-quote"></pre>
+            </details>
+
+            <div class="narration-grid-3 narration-mix-controls">
+              <label class="narration-field">動画内の開始位置（秒）
+                <div class="voice-select-row">
+                  <input id="music-start-seconds" type="number" min="0" max="1240" step="0.1" value="0">
+                  <button id="music-use-current-time" type="button" class="quiet">現在の再生位置</button>
+                </div>
+              </label>
+              <label class="narration-field">元の動画（またはナレーション）の音量：<span id="music-video-volume-label">80%</span>
+                <input id="music-video-volume" type="range" min="0" max="200" step="5" value="80">
+              </label>
+              <label class="narration-field">音楽（BGM）の音量：<span id="music-track-volume-label">45%</span>
+                <input id="music-track-volume" type="range" min="10" max="200" step="5" value="45">
+              </label>
+            </div>
+            <div class="narration-grid-2">
+              <label class="narration-field">曲の前の無音（秒・0〜10）
+                <input id="music-lead-silence" type="number" min="0" max="10" step="0.5" value="0">
+              </label>
+            </div>
+            <p id="music-mix-hint" class="hint"></p>
+            <div class="narration-mix-actions">
+              <button id="music-apply" type="button" class="primary">選択中の動画に音楽を重ねる</button>
+              <button id="music-layer" type="button" class="secondary" hidden>今の動画音声（ナレーション等）にさらにBGMを重ねる</button>
+              <button id="music-restore" type="button" class="quiet" hidden>元の動画音声に戻す</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="timeline-section"><div class="section-heading"><h2>物語のタイムライン</h2><span id="timeline-total">0 / 40秒</span></div><div id="timeline" class="timeline" aria-label="各段階の動画"></div><div class="timeline-foot"><span><i></i> 各版は、そこまでの映像を含みます</span><span id="timeline-note">3〜10秒を選択 · この展開は40秒まで</span></div></section>
+        <section class="history-section"><div class="section-heading"><h2>生成した版</h2><span id="history-count">0本</span></div><p id="history-empty" class="hint">完成した動画がここに並びます。別の版を見るだけでは、延長の元は変わりません。</p><div id="history" class="history"></div><div id="fork-panel" class="fork-panel" hidden><p id="fork-description"></p><button id="fork" class="secondary">この版から別の続きをつくる</button></div></section>
+      </section>
+    </div>
+
+    <section class="details-grid" aria-label="利用前に知っておきたいこと">
+      <details open><summary>料金と失敗時の扱い</summary><p>実生成は無料ではありません。利用者ご本人のGoogle APIプロジェクトに、入力・出力のトークン使用量に応じた料金が発生します。延長や別展開も新しいリクエストです。採用しなかった動画も、生成済みの利用分は課金対象になります。</p><p>失敗・フィルター拒否・通信切断の表示だけで、請求がゼロとは判断できません。処理済みの利用分やGoogle側の条件によるため、AI Studioの使用量・請求を確認してください。秒単価から完成までの総額は確約しません。</p><p>360pは下書き向けで、Googleは720pの約1/3の生成コストと案内しています。1080p・4Kはアップスケール出力です。解像度ごとの最新料金はGoogle公式情報をご確認ください。入力・延長の利用量もあるため、完成までの総額は確約しません。</p><a href="https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/" target="_blank" rel="noopener noreferrer">解像度とコストの公式案内 ↗</a> · <a href="https://ai.google.dev/gemini-api/docs/pricing#gemini-omni-flash" target="_blank" rel="noopener noreferrer">Googleの公式料金を確認 ↗</a></details>
+      <details><summary>長さを選んで延長する仕組み</summary><p id="duration-description">初回も延長も3〜10秒を選び、その長さをGoogle APIへ指定します。</p><p id="extension-description">通常の延長は前の生成IDを参照します。取り込んだ動画や上限付近の延長では、延長の元になる動画の末尾10秒以下をGoogleへ送り、前半をこのMacでつなぎます。この場合も持ち込み動画の地域・セリフ制約が適用されます。つなぎ目の一部フレームは調整される場合があります。</p><p id="duration-policy-description">この展開の予定は合計40秒までです。長い元動画のローカルの前半は別に保持します。予定と実際の再生時間は分けて確認し、予定から外れた出力は確認用に残します。フレーム・音声の端数があるため、指定どおりの厳密な実尺は保証しません。日本語の指示は公式の英語中心の評価と結果が異なる場合があります。</p><a href="https://ai.google.dev/gemini-api/docs/omni#video-extension" target="_blank" rel="noopener noreferrer">公式の動画延長仕様 ↗</a></details>
+      <details><summary>キーと作品の保存について</summary><p>このアプリはAPIキー・プロンプト・作品を永続保存しません。タブの再読み込みや終了で失われます。必要な動画は各版のダウンロードから保存してください。Google以外の外部スクリプトやアクセス解析は使用していません。</p><p>延長のため、プロンプト・生成動画・生成IDはGoogle側に保存されます（store: true）。Google側の保持期間・データ利用条件が適用されます。アプリでキーを消しても、Google側の履歴や請求は消えません。</p><a href="https://ai.google.dev/gemini-api/docs/interactions-overview#data-storage-and-retention" target="_blank" rel="noopener noreferrer">Google側のデータ保持を確認 ↗</a></details>
+    <details id="browser-media-license" hidden><summary>動画処理のライセンスとソース</summary><p>動画処理には ffmpeg.wasm（MIT）と FFmpeg core（GPL-2.0-or-later）を使用しています。対応するライセンスとソースを同じ配信元に公開しています。</p><a href="./vendor/ffmpeg/licenses/README.md" target="_blank" rel="noopener noreferrer">ライセンスとソース ↗</a></details>
+    </section>
+  </main>
+  <footer><span><img src="./assets/mark.svg" width="18" height="18" alt=""> Omni Continue Studio</span><p>ご自身の言葉から、次のシーンへ。<span>非公式の制作ツールです。</span></p></footer>
+
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title"><form method="dialog"><h2 id="confirm-title"></h2><p id="confirm-copy"></p><label id="confirm-check-label" class="check-label" hidden><input id="confirm-check" type="checkbox"><span>Google側の生成を取り消す操作ではなく、課金が発生している可能性を理解しました。</span></label><div class="dialog-actions"><button value="cancel" class="secondary">戻る</button><button id="confirm-ok" value="ok" class="primary">続ける</button></div></form></dialog>
+</body>
+</html>
