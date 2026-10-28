@@ -1,57 +1,39 @@
-// Local production server for dist/: serves the built app with exactly the headers Vercel sends
-// (read from vercel.json), so browser tests run under the real Content-Security-Policy.
 import { createServer } from 'node:http';
-import { readFileSync, statSync, createReadStream } from 'node:fs';
-import { extname, join, normalize, resolve, sep } from 'node:path';
+import { readFile, stat, realpath } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { resolve, extname, sep } from 'node:path';
+import { createHash } from 'node:crypto';
+import { createLocalMediaHandler } from './local-media.mjs';
 
-const here = fileURLToPath(new URL('.', import.meta.url));
-const root = resolve(here, 'dist');
-const host = process.env.HOST || '127.0.0.1';
-const port = Number(process.env.PORT || 4180);
+const root = fileURLToPath(new URL('./dist/', import.meta.url));
+const port = Number(process.env.PORT || 4317);
+const identity = { app: 'omni-continue-studio', pid: process.pid, startedAt: new Date().toISOString(), checkout: createHash('sha256').update(fileURLToPath(import.meta.url)).digest('hex') };
+const csp = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'";
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.mp4': 'video/mp4' };
 
-/** Headers that vercel.json applies to every path. */
-export function vercelHeaders(config = JSON.parse(readFileSync(join(here, 'vercel.json'), 'utf8'))) {
-  const rule = config.headers.find((h) => h.source === '/(.*)');
-  return Object.fromEntries(rule.headers.map((h) => [h.key, h.value]));
+export function createAppServer() {
+ const localMedia = createLocalMediaHandler();
+ return createServer(async (req, res) => {
+  const headers = { 'Content-Security-Policy': csp, 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()', 'X-Frame-Options': 'DENY' };
+  try {
+    const path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    if (await localMedia(req, res, path, headers)) return;
+    if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405, headers).end(); return; }
+    if (path === '/__local_status') {
+      res.writeHead(200, { ...headers, 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(req.method === 'HEAD' ? undefined : JSON.stringify(identity)); return;
+    }
+    const target = resolve(root, `.${path === '/' ? '/index.html' : path}`);
+    if (!target.startsWith(root.endsWith(sep) ? root : root + sep)) { res.writeHead(403, headers).end(); return; }
+    const info = await stat(target);
+    if (!info.isFile()) throw new Error('not a file');
+    const data = await readFile(target);
+    res.writeHead(200, { ...headers, 'Content-Type': types[extname(target)] || 'application/octet-stream', 'Content-Length': data.length });
+    res.end(req.method === 'HEAD' ? undefined : data);
+  } catch { res.writeHead(404, headers).end('Not found'); }
+ });
 }
-
-const types = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.png': 'image/png',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
-  '.json': 'application/json',
-  '.pdf': 'application/pdf',
-};
-
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const headers = vercelHeaders();
-  createServer((req, res) => {
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
-      res.writeHead(405, { ...headers, Allow: 'GET, HEAD' }).end();
-      return;
-    }
-    let path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-    if (path.endsWith('/')) path += 'index.html';
-    const target = normalize(join(root, path));
-    if (!target.startsWith(root + sep)) {
-      res.writeHead(404, headers).end();
-      return;
-    }
-    let size;
-    try {
-      const st = statSync(target);
-      if (!st.isFile()) throw new Error('not a file');
-      size = st.size;
-    } catch {
-      res.writeHead(404, headers).end();
-      return;
-    }
-    res.writeHead(200, { ...headers, 'Content-Type': types[extname(target)] ?? 'application/octet-stream', 'Content-Length': size });
-    if (req.method === 'HEAD') res.end();
-    else createReadStream(target).pipe(res);
-  }).listen(port, host, () => console.log(`hunet vids: http://${host}:${port}/ (Ctrl+C to stop)`));
+export const server = createAppServer();
+if (process.argv[1] && await realpath(resolve(process.argv[1])) === fileURLToPath(import.meta.url)) {
+ server.listen(port, '127.0.0.1', () => console.log(`Omni Continue Studio: http://127.0.0.1:${port}`));
 }

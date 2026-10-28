@@ -1,0 +1,1162 @@
+{
+  "base": "https://unko-omni.vercel.app",
+  "startedAt": "2026-10-15T21:30:52.465Z",
+  "completedAt": "2026-10-15T21:31:05.881Z",
+  "expectedManifestSha256": "82d2f673b5c592a187526c5ade6bac6059c1588c3fd043e539d47f15e417a843",
+  "fileCount": 46,
+  "expectedBytes": 140113005,
+  "integrityMatches": 46,
+  "privatePathCount": 14,
+  "privatePaths404": 14,
+  "issues": [],
+  "root": {
+    "file": "",
+    "status": 200,
+    "bytes": 17688,
+    "sha256": "b14f7b325fd8e1f0f21f2f6881b2c13ba29f66fc655fe9492e5172cce3d62686",
+    "headers": {
+      "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+      "content-type": "text/html; charset=utf-8",
+      "referrer-policy": "no-referrer",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "cache-control": "no-store"
+    },
+    "integrity": true,
+    "checks": {
+      "nosniff": true,
+      "noReferrer": true,
+      "frameDeny": true,
+      "mainWasm": true,
+      "mainWorkerSelf": true,
+      "mainFrameAncestorsNone": true
+    }
+  },
+  "results": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "bytes": 17688,
+      "sha256": "b14f7b325fd8e1f0f21f2f6881b2c13ba29f66fc655fe9492e5172cce3d62686",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/html; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true,
+        "mainWasm": true,
+        "mainWorkerSelf": true,
+        "mainFrameAncestorsNone": true
+      }
+    },
+    {
+      "file": "app.js",
+      "status": 200,
+      "bytes": 33479,
+      "sha256": "ebb90b038c39957ac1e032d137eea25e77c429be5a027fa82ebea606eca51358",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "core.js",
+      "status": 200,
+      "bytes": 30591,
+      "sha256": "b395b5c128dc147becd8aed17b6bf60ec92421486ba5a08a7fb2dd7276cd5a93",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "google.js",
+      "status": 200,
+      "bytes": 16795,
+      "sha256": "2ba38e689c6ee0a4a552819ba759b6fc187a2477e0dcec6f58b25fe02cbeaebc",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "api-errors.js",
+      "status": 200,
+      "bytes": 9307,
+      "sha256": "548f015d55b07d681724fc39d5f332d950ae0247ff4489c4f0c4e42de1109fe6",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "media.js",
+      "status": 200,
+      "bytes": 2433,
+      "sha256": "332f0ffa1876d14665425e54db62346b6ba2541edace1aeb038bf55b79a573f8",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "browser-media.js",
+      "status": 200,
+      "bytes": 17085,
+      "sha256": "d0db2db7bd1a78453aadc10ed600bdda78ce67273c0162504a87a834661b84a6",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "local-media-client.js",
+      "status": 200,
+      "bytes": 302,
+      "sha256": "1845a15cd1c6d33febc2af68371df908188db447247b6905988e1c5f139219fd",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "runtime.js",
+      "status": 200,
+      "bytes": 80,
+      "sha256": "5c8db2674ac5d60a915389839a9589fb9c2ec7845f23797e5653b4641c2f64c6",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "style.css",
+      "status": 200,
+      "bytes": 16696,
+      "sha256": "bd66e06f4e2d29d636a6e39846c05e04e3a5a420ecc6cce56760fdf1dc663249",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/css; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "base.css",
+      "status": 200,
+      "bytes": 145,
+      "sha256": "57937f419587ed52c75a5a913eedc38b4f56926db4ffe635f4af4463705df5f1",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/css; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "assets/mark.svg",
+      "status": 200,
+      "bytes": 218,
+      "sha256": "19a3274a65c2654f76ba9764d421a7b53b01c2023d053b52ef50fc7195e74d37",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "image/svg+xml",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/manifest.json",
+      "status": 200,
+      "bytes": 16841,
+      "sha256": "5e6ab966c3464540620be0bcbe63e5b00336924554e277c09b177e6971796ec2",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/json; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/core/ffmpeg-core.js",
+      "status": 200,
+      "bytes": 111804,
+      "sha256": "67a48f11645f85439f3fde4f2119042c16b374b910206b7a7a24f342e28dcae3",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/core/ffmpeg-core.wasm",
+      "status": 200,
+      "bytes": 32232419,
+      "sha256": "9f57947a5bd530d8f00c5b3f2cb2a3492faa7e5d823315342d6a8656d0a6b7b7",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/wasm",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true,
+        "wasmMime": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/ffmpeg/classes.js",
+      "status": 200,
+      "bytes": 9747,
+      "sha256": "7a829c898bdbc3a8806652a5502d9101178ce4e988a2c50b3abc1306ce4fc919",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/ffmpeg/const.js",
+      "status": 200,
+      "bytes": 1016,
+      "sha256": "9e3bc9dd84781c81daf459e2c46eeec815edac35089832681d9a9a0f383060d0",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/ffmpeg/errors.js",
+      "status": 200,
+      "bytes": 332,
+      "sha256": "619310d7ef5fe5fefa0a31927db862b7c291713cfef4d71753fa8aafd18f4db6",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/ffmpeg/index.js",
+      "status": 200,
+      "bytes": 58,
+      "sha256": "cad19572420f7ead17272082d9582ebaed7f2856e19875542f83daf8d25d3b5d",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/ffmpeg/types.js",
+      "status": 200,
+      "bytes": 295,
+      "sha256": "72f80e6fd44fcd18b55c9a0deb3bc70b9bb37480cf969045ca4521f5a11300f5",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/ffmpeg/utils.js",
+      "status": 200,
+      "bytes": 138,
+      "sha256": "8c2e0e16445f8d3a0acbb812f2c60541a92c88ed0bf9ffe96c52e7fb6c8b1d72",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/ffmpeg/worker.js",
+      "status": 200,
+      "bytes": 5085,
+      "sha256": "feff0ac937ea225e997e1fae997a74f8b8d572423a526da59eb56624b1f3cde7",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'none'; connect-src 'self'; base-uri 'none'; object-src 'none'",
+        "content-type": "application/javascript; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true,
+        "workerConnectOnlySelf": true,
+        "workerNoGoogle": true,
+        "workerWasm": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/licenses/core-COPYING.GPLv2.txt",
+      "status": 200,
+      "bytes": 18092,
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/licenses/core-LICENSE.md",
+      "status": 200,
+      "bytes": 4376,
+      "sha256": "cb48bf09a11f5fb576cddb0431c8f5ed0a60157a9ec942adffc13907cbe083f2",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/markdown; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/licenses/README.md",
+      "status": 200,
+      "bytes": 4200,
+      "sha256": "4f903d94dfabef2efdfaad01741a7e92dbd983890bae272d271d1e2ea23b1b58",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/markdown; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/licenses/wrapper-MIT.txt",
+      "status": 200,
+      "bytes": 1066,
+      "sha256": "3e123e29517d76504ffce77b3f8e2ccffd4712493f27694b0aba3e376676459f",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/emscripten-core-emscripten-5c27e79dd0a9c4e27ef2326841698cdd4f6b5784.tar.gz",
+      "status": 200,
+      "bytes": 28785427,
+      "sha256": "3eb9ea2d69052a491296eb466dbcda5fbc1c0fed4e475c58545a83558fb47d10",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/FFmpeg-FFmpeg-4729204c17f756e186d622060088371d10b34f7e.tar.gz",
+      "status": 200,
+      "bytes": 14428595,
+      "sha256": "0d7ad57d4dd851d577fc6c19e5cec5b6e5faaeb2dbd52ab76127e3c3763fec6d",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpeg-wasm-v12.15-source.tar.gz",
+      "status": 200,
+      "bytes": 1329034,
+      "sha256": "98e473f975e4aa6e5836d99078c40db5d8f4ea52685e6411025f2d7b876a7569",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpegwasm-freetype2-6a2b3e4007e794bfc6c91030d0ed987f925164a8.tar.gz",
+      "status": 200,
+      "bytes": 2095678,
+      "sha256": "09acceb42508c65b7b744cc2ad01d7548868ca57babc39f7683ec3c0f7541e8c",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpegwasm-lame-2badea1974ae36cb8312afe99cff1e6b3b5decee.tar.gz",
+      "status": 200,
+      "bytes": 1525181,
+      "sha256": "0d97ba0776988f5730e0ce1fa936e7c5d6836c757993ba55073513fe89cf410a",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpegwasm-libvpx-10b9492dcf05b652e2e4b370e205bd605d421972.tar.gz",
+      "status": 200,
+      "bytes": 5520751,
+      "sha256": "12181ed27342415e8b01bf09abfbf1dfa27a6a32f302fb78b48bd70efe50f702",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpegwasm-libwebp-ca332209cb5567c9b249c86788cb2dbf8847e760.tar.gz",
+      "status": 200,
+      "bytes": 3685887,
+      "sha256": "1676107dc385f9bf6cb4c2b94d4a9359d1fd95ab6309cb587191a742df292fe2",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpegwasm-Ogg-bada45718453ac27b56773ae663f7e65112f6a6e.tar.gz",
+      "status": 200,
+      "bytes": 256023,
+      "sha256": "4d61f8dfa248276c42bd5404b1a87ae9d8a0d58791f55e20018c7b39b38d8823",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpegwasm-opus-e85ed7726db5d677c9c0677298ea0cb9c65bdd23.tar.gz",
+      "status": 200,
+      "bytes": 829306,
+      "sha256": "c6d574b17d70b8c289d997a8ac81314cf1fd8c52237c421b2ee34e69cea85bf8",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpegwasm-theora-7ffd8b2ecfc2d93ae5e16028e7528e609266bfbf.tar.gz",
+      "status": 200,
+      "bytes": 1134014,
+      "sha256": "c38e6a3fb19566a44dcb283323c48311dd484f1416f3f34676d3e7fd252dfbc5",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpegwasm-vorbis-7798164043197d7e33f02de4353ce2aa5b248225.tar.gz",
+      "status": 200,
+      "bytes": 1324827,
+      "sha256": "69b87cafe2815d02609886a63b9d4c0b7461e1e2f6ecf3960ede04053da6e96a",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpegwasm-x264-33cac6b77d5b9259c552156013a817ab23119612.tar.gz",
+      "status": 200,
+      "bytes": 942903,
+      "sha256": "75434a5a1f2d7d4314821c6054dd300731d69e2fa73314ba4a5ec9df38d4ec80",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpegwasm-x265-2bb5520e9596f361bf0ed81b3b8da0d7fd999069.tar.gz",
+      "status": 200,
+      "bytes": 1531931,
+      "sha256": "e5254828f5db7bc375d385e31247861d25facee87b43fa2d08ea3ab5569672ab",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/ffmpegwasm-zlib-cacf7f1d4e3d44d871b605da3b647f07d718623f.tar.gz",
+      "status": 200,
+      "bytes": 645528,
+      "sha256": "6d4d6640ca3121620995ee255945161821218752b551a1a180f4215f7d124d45",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/fribidi-fribidi-f9e8e71a6fbf4a4619481284c9f484d10e559995.tar.gz",
+      "status": 200,
+      "bytes": 2088197,
+      "sha256": "65ff6fb1a478c4d90ae16825da8c97b8a63e2674f8a2d6dae8800f89089640ba",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/harfbuzz-harfbuzz-4a1d891c6317d2c83e5f3c2607ec5f5ccedffcde.tar.gz",
+      "status": 200,
+      "bytes": 32968210,
+      "sha256": "69ba7c7a42643a3654781242016dd09245cab7353fc2a02cecb710e479c9a881",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/libass-libass-d149636f502f5774ae1a8fb4c554b122674393b2.tar.gz",
+      "status": 200,
+      "bytes": 243399,
+      "sha256": "5cfe23562fa623a3b209d156ad469aeb2e31f69bf6b256ea737d87d9ed89301d",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/libsdl-org-SDL-55b03c7493a7abed33cf803d1380a40fa8af903f.tar.gz",
+      "status": 200,
+      "bytes": 7890806,
+      "sha256": "a726e31f8ad9443a2a9a649f12751442d8ca5ea78a84fde14f760c81706b4127",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/sekrit-twc-zimg-e5b0de6bebbcbc66732ed5afaafef6b2c7dfef87.tar.gz",
+      "status": 200,
+      "bytes": 326769,
+      "sha256": "3ab062eff30067799997bc3e911c0108a5b8cbcd6e0ef14053f17ff0ecd0add8",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/gzip",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    },
+    {
+      "file": "vendor/ffmpeg/sources/source-lock.json",
+      "status": 200,
+      "bytes": 10251,
+      "sha256": "14bd36e8a110b7b3f7f35fd35d89b965343eff13ee2150c00300615a81b802d2",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "application/json; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      },
+      "integrity": true,
+      "checks": {
+        "nosniff": true,
+        "noReferrer": true,
+        "frameDeny": true
+      }
+    }
+  ],
+  "privatePaths": [
+    {
+      "file": "test/browser-harness.html",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "46a4710950f75ee0f25eee9b19f4f7e212d736f38d61ae571ee1f2a3770327b9",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "test/browser-harness.js",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "2677793b77ac057b2722b328bef6e300024a62c6460754e1cee83d8c9a9761c4",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "test/fixtures/demo-10.mp4",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "06bf81ab3cde07c336cfb56c90e29c4712c884e10694dc6fcb5a0535dc62c385",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "tools/vendor-ffmpeg.mjs",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "2a0f8d057e6008b13cb0d99c4bc599f2c15d9632e1515744a33bc16df943f122",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "tools/build-vercel.mjs",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "258bdbae1d2b455c3e2b51354c0f2a04c60976d5b5edee354cbc229eab5e76fc",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "docs/browser-preview-manifest.json",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "6104327325056fde6abd9b87b94d0507574b7db277b4be00992b01b0e5911f12",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "docs/publishing.md",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "d26a2c269c5f7e3e6a87ec26ca9bd6d60e311406fe02e969abb69a25602b1fc9",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "server.mjs",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "8505401a33ffd16830cca75f219cb6298d5ccd94f15cef6bed67355bfecb7eb3",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "local-media.mjs",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "00229ee6511150b77cc07af141f9942f53b41a514405d81a812f64e846b0ebc8",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": ".runtime/server.json",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "c01ee82a7b8dfa54bb7ef656d7fe62f63e4b4f3089bfb6d2df5d8ce7e7de091c",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "AGENTS.md",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "be2bed1605a39d32f81cc3abd87ea44108848da93f6efc3891f07aae666a2d97",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "package.json",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "7c9577cc124d32a1de0f1fd7b3f459edaa335e1a67cd583b0c8a4369a9a9072a",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "vercel.json",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "cfd6b31baa542aa12a3dee5c1cb69af81fbf53028a8de7f6740c3bb01a80e090",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    },
+    {
+      "file": "public-build-manifest.json",
+      "status": 404,
+      "bytes": 79,
+      "sha256": "13aeb55e469db9eaeba88e646bf724770e2c86c31c9b605a234bdb11469dafaf",
+      "headers": {
+        "content-security-policy": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' blob:; media-src 'self' blob:; connect-src 'self' https://generativelanguage.googleapis.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        "content-type": "text/plain; charset=utf-8",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "no-store"
+      }
+    }
+  ]
+}

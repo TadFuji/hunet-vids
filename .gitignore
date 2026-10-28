@@ -1,31 +1,18 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+node_modules/
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-live-output
-.vercel
+test-results/
 .env*
-test-results
-playwright-report
-.claude/
-docs/manual/manual.html
+.vercel/
+.runtime/
+
+# Reproduced from pinned official sources by tools/vendor-ffmpeg.mjs.
+/dist/vendor/ffmpeg/core/
+/dist/vendor/ffmpeg/ffmpeg/
+/dist/vendor/ffmpeg/sources/
+/dist/vendor/ffmpeg/manifest.json
+/dist/vendor/ffmpeg/licenses/core-*
+/dist/vendor/ffmpeg/licenses/wrapper-MIT.txt
+/public/
+/public-build-manifest.json
+/output/
+/test/fixtures/*.mp4

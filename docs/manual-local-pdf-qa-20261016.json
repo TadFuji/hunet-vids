@@ -1,0 +1,62 @@
+{
+  "pages": 7,
+  "bytes": 188455,
+  "sha256": "5a9798686e239760adf6d1eaafb2efb73dc7f631c1410c64c1fe55f6803fe068",
+  "renderScale": 1.6,
+  "pagesChecked": [
+    {
+      "page": 1,
+      "characters": 832,
+      "links": 7,
+      "missingGlyphReplacement": false,
+      "outsidePage": false
+    },
+    {
+      "page": 2,
+      "characters": 911,
+      "links": 0,
+      "missingGlyphReplacement": false,
+      "outsidePage": false
+    },
+    {
+      "page": 3,
+      "characters": 1091,
+      "links": 0,
+      "missingGlyphReplacement": false,
+      "outsidePage": false
+    },
+    {
+      "page": 4,
+      "characters": 1120,
+      "links": 0,
+      "missingGlyphReplacement": false,
+      "outsidePage": false
+    },
+    {
+      "page": 5,
+      "characters": 918,
+      "links": 0,
+      "missingGlyphReplacement": false,
+      "outsidePage": false
+    },
+    {
+      "page": 6,
+      "characters": 1118,
+      "links": 0,
+      "missingGlyphReplacement": false,
+      "outsidePage": false
+    },
+    {
+      "page": 7,
+      "characters": 1079,
+      "links": 4,
+      "missingGlyphReplacement": false,
+      "outsidePage": false
+    }
+  ],
+  "fonts": {
+    "/AAAAAA+ArialUnicodeMS": "embedded TrueType with ToUnicode",
+    "/AAAAAB+ArialUnicodeMS": "embedded TrueType with ToUnicode"
+  },
+  "visualInspection": "All seven rendered pages reviewed; no clipping, overlaps or missing Japanese glyphs."
+}

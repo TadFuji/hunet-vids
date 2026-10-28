@@ -1,0 +1,52 @@
+{
+  "appVersion": "2026-10-16.13",
+  "localOnly": true,
+  "deployed": false,
+  "productionReleaseCommit": "5cab7fbbb7505b6d4984962c5f81e8cdfb1fe180",
+  "tests": {
+    "passed": 185,
+    "failed": 0,
+    "independentUiCorePassed": 58
+  },
+  "syntheticBrowser": {
+    "googleRequests": 0,
+    "mockGenerationRequests": 2,
+    "unplayed3Seconds": {
+      "paused": true,
+      "currentTime": 0,
+      "extensionEnabled": true
+    },
+    "mockExtendedSeconds": 6,
+    "historyDisplay": {
+      "duration": 3,
+      "paused": true,
+      "focused": true,
+      "insideViewport": true
+    },
+    "historyPlay": {
+      "paused": false,
+      "observedCurrentTime": 0.25415
+    },
+    "timelinePlay": {
+      "duration": 6,
+      "paused": false,
+      "observedCurrentTime": 0.239154
+    }
+  },
+  "unchangedFiles": [
+    "dist/google.js",
+    "dist/media.js",
+    "dist/browser-media.js",
+    "dist/local-media-client.js",
+    "dist/runtime.js",
+    "server.mjs",
+    "local-media.mjs",
+    "tools/build-public.mjs",
+    "tools/build-vercel.mjs",
+    "tools/prepare-vercel.mjs"
+  ],
+  "realApiTested": false,
+  "userTabsTouched": false,
+  "publicPdfPreservedSha256": "f5ef47f5ebb488049fb1992d6b321bcbc2119e820407e6f2b81ced4fccbfba15",
+  "candidatePdfSha256": "5a9798686e239760adf6d1eaafb2efb73dc7f631c1410c64c1fe55f6803fe068"
+}

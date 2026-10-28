@@ -1,0 +1,159 @@
+{
+  "prepare": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360,
+        "duration": "10.000000"
+      },
+      {
+        "codec_type": "audio",
+        "duration": "10.000000"
+      }
+    ],
+    "format": {
+      "duration": "10.000000"
+    }
+  },
+  "compose": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360,
+        "duration": "70.000000"
+      },
+      {
+        "codec_type": "audio",
+        "duration": "70.000000"
+      }
+    ],
+    "format": {
+      "duration": "70.000000"
+    }
+  },
+  "trim1": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360,
+        "duration": "1.000000"
+      },
+      {
+        "codec_type": "audio",
+        "duration": "1.000000"
+      }
+    ],
+    "format": {
+      "duration": "1.000000"
+    }
+  },
+  "trim2": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360,
+        "duration": "2.000000"
+      },
+      {
+        "codec_type": "audio",
+        "duration": "2.000000"
+      }
+    ],
+    "format": {
+      "duration": "2.000000"
+    }
+  },
+  "composeSequence": [
+    {
+      "at": 1,
+      "meanRGB": [
+        120,
+        132,
+        128
+      ],
+      "audioRMS": 0.08842
+    },
+    {
+      "at": 49,
+      "meanRGB": [
+        120,
+        133,
+        127
+      ],
+      "audioRMS": 0.08832
+    },
+    {
+      "at": 51,
+      "meanRGB": [
+        0,
+        0,
+        255
+      ],
+      "audioRMS": 0.08847
+    },
+    {
+      "at": 69,
+      "meanRGB": [
+        0,
+        0,
+        255
+      ],
+      "audioRMS": 0.08834
+    }
+  ],
+  "portraitCompose": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 360,
+        "height": 640,
+        "duration": "15.000000"
+      },
+      {
+        "codec_type": "audio",
+        "duration": "15.000000"
+      }
+    ],
+    "format": {
+      "duration": "15.000000"
+    }
+  },
+  "portraitAudio": [
+    {
+      "at": 0.5,
+      "audioRMS": 0.0
+    },
+    {
+      "at": 3,
+      "audioRMS": 0.088824
+    },
+    {
+      "at": 14,
+      "audioRMS": 0.088273
+    }
+  ],
+  "rotatedSource": {
+    "sourceSeconds": 20,
+    "prefixSeconds": 10,
+    "tailSeconds": 10,
+    "width": 360,
+    "height": 640,
+    "aspectRatio": "9:16",
+    "hasAudio": true,
+    "elapsedMs": 2543
+  }
+}
