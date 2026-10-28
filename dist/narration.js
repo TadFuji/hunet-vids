@@ -193,8 +193,12 @@ export function parseInlineStyleSegments(rawText, defaultStyle = '') {
   return segments;
 }
 
+const EXPRESSION_TAG_TOKENS = Object.freeze(EXPRESSIONS_ALL.flatMap(group => group.items.map(item => item.tag)));
+
 export function stripInlineStyleMarkers(rawText) {
-  return String(rawText || '').replace(/【話し方[:：][^】]+】/g, '').replace(/<[a-z -]+>/gi, '');
+  let out = String(rawText || '').replace(/【話し方[:：][^】]+】/g, '');
+  for (const token of EXPRESSION_TAG_TOKENS) out = out.split(token).join('');
+  return out;
 }
 
 export function slicePreviewText(rawText) {

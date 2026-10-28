@@ -53,6 +53,12 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
+      - name: Ensure ffmpeg and ffprobe are available at pinned path
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+          sudo mkdir -p /opt/homebrew/bin
+          sudo ln -sf /usr/bin/ffmpeg /opt/homebrew/bin/ffmpeg
+          sudo ln -sf /usr/bin/ffprobe /opt/homebrew/bin/ffprobe
       - name: Prepare pinned ffmpeg.wasm vendor runtime
         run: node tools/vendor-ffmpeg.mjs
       - name: Run UI, browser media, narration, music, and public bundle tests
