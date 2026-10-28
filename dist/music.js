@@ -387,6 +387,7 @@ export class MusicGateway {
     this.wait = wait;
     this.timeoutMs = timeoutMs;
     this.polls = polls;
+    this.pendingJob = null;
   }
   key() {
     const k = typeof this.getApiKey === 'function' ? this.getApiKey() : this.getApiKey;
@@ -430,13 +431,16 @@ export class MusicGateway {
       throw new StudioError('Google音楽生成APIの応答を読み取れませんでした。', { uncertain: true });
     }
   }
-  async generateMusic(requestPayload) {
-    let interaction = await this.requestJson('/v1beta/interactions', { method: 'POST', body: requestPayload });
-    const interactionId = String(interaction?.id || '');
+  abandonPending() {
+    this.pendingJob = null;
+  }
+  async completeMusicInteraction(initialInteraction, interactionId) {
+    let interaction = initialInteraction;
     for (let i = 0; i < this.polls; i++) {
       const status = interaction?.status;
       if (!status || status === 'completed') break;
       if (['failed', 'cancelled', 'incomplete'].includes(status)) {
+        this.pendingJob = null;
         throw new StudioError('Google側で音楽の生成が完了しませんでした。プロンプトや歌詞を変えて再度お試しください。', { terminal: true });
       }
       if (!['in_progress', 'queued'].includes(status) || !interactionId) break;
@@ -454,13 +458,17 @@ export class MusicGateway {
       for (let i = 0; i < this.polls; i++) {
         const file = await this.requestJson(`/v1beta/files/${fileId}`);
         if (file?.state === 'ACTIVE' || !file?.state) { active = true; break; }
-        if (file?.state === 'FAILED') throw new StudioError('Google側で音楽ファイルの処理に失敗しました。', { terminal: true });
+        if (file?.state === 'FAILED') {
+          this.pendingJob = null;
+          throw new StudioError('Google側で音楽ファイルの処理に失敗しました。', { terminal: true });
+        }
         await this.wait(2500);
       }
       if (!active) throw new StudioError('音楽ファイルの準備待機時間を超えました。', { uncertain: true });
       const mediaRes = await this.request(`/v1beta/files/${fileId}:download?alt=media`);
       rawBytes = new Uint8Array(await mediaRes.arrayBuffer());
     } else {
+      this.pendingJob = null;
       throw new StudioError('Google音楽生成APIから音声データが返されませんでした。指示文や歌詞を見直してお試しください。', { terminal: true });
     }
 
@@ -477,6 +485,7 @@ export class MusicGateway {
       try { durationSeconds = parseWav(rawBytes).durationSeconds; } catch {}
     }
 
+    this.pendingJob = null;
     return {
       interactionId,
       bytes: rawBytes,
@@ -487,6 +496,32 @@ export class MusicGateway {
       lyricsOrNotes: extracted.lyricsOrNotes || '',
     };
   }
+  async resumePending(id = this.pendingJob?.id) {
+    const targetId = String(id || '').trim();
+    if (!targetId) throw new StudioError('再取得できる音楽生成IDがありません。', { uncertain: true });
+    const interaction = await this.requestJson(`/v1beta/interactions/${encodeURIComponent(targetId)}`);
+    return this.completeMusicInteraction(interaction, targetId);
+  }
+  async generateMusic(requestPayload) {
+    this.pendingJob = { id: null, uncertain: false };
+    let interaction;
+    try {
+      interaction = await this.requestJson('/v1beta/interactions', { method: 'POST', body: requestPayload });
+    } catch (err) {
+      if (err?.terminal) this.pendingJob = null;
+      else this.pendingJob = { id: null, uncertain: true };
+      throw err;
+    }
+    const interactionId = String(interaction?.id || '');
+    this.pendingJob = { id: interactionId || null, uncertain: false };
+    try {
+      return await this.completeMusicInteraction(interaction, interactionId);
+    } catch (err) {
+      if (err?.terminal) this.pendingJob = null;
+      else this.pendingJob = { id: interactionId || null, uncertain: true };
+      throw err;
+    }
+  }
 }
 
 export function mountMusicStudio({
@@ -496,6 +531,7 @@ export function mountMusicStudio({
   blobUrl,
   onUpdate,
   alertUser,
+  confirmUser,
   keyRequiredMessage = 'Gemini の API キーを入力してください',
 } = {}) {
   const $ = id => document.getElementById(id);
@@ -859,6 +895,51 @@ export function mountMusicStudio({
   $('music-generate')?.addEventListener('click', async () => {
     const studio = typeof getStudio === 'function' ? getStudio() : null;
     if (state.busy || studio?.busy || studio?.job || !requireKey()) return;
+    if (gateway.pendingJob) {
+      if (gateway.pendingJob.id && !gateway.pendingJob.resumeAttempted) {
+        gateway.pendingJob.resumeAttempted = true;
+        state.busy = true;
+        state.error = '';
+        state.status = '直前の音楽生成の結果を再取得しています（新規生成なし）…';
+        render();
+        try {
+          const result = await gateway.resumePending();
+          const id = `music-${state.tracks.length + 1}`;
+          const label = `トラック ${state.tracks.length + 1}（再取得 · ${state.mode === 'vocal' ? 'ボーカル曲' : 'BGM'}）`;
+          const track = {
+            id,
+            label,
+            blob: result.blob,
+            wavBlob: result.ext === 'wav' ? result.blob : null,
+            ext: result.ext,
+            mimeType: result.mimeType,
+            durationSeconds: result.durationSeconds,
+            lyricsOrNotes: result.lyricsOrNotes,
+            promptText: '',
+          };
+          state.tracks.unshift(track);
+          state.selectedTrackId = track.id;
+          state.status = `${label} を再取得しました。下のプレーヤーで試聴やダウンロード、動画への合成ができます。`;
+          return;
+        } catch (err) {
+          state.error = `${err instanceof StudioError ? err.message : '音楽の再取得を完了できませんでした。'}（再度ボタンを押すと確認終了を選べます）`;
+          state.status = '';
+          return;
+        } finally {
+          state.busy = false;
+          render();
+        }
+      }
+      const ask = typeof confirmUser === 'function'
+        ? confirmUser
+        : async (title, msg) => (typeof window !== 'undefined' && typeof window.confirm === 'function' ? window.confirm(`${title}\n\n${msg}`) : true);
+      const ok = await ask(
+        '結果未確認の音楽生成を終了し、新規生成へ進みますか？',
+        '直前の音楽生成通信が途中で中断されたため、Google側で処理や課金が続いている可能性があります。先の生成の取り消し・返金ではありません。利用状況を確認したうえで新しい有料リクエストを送る場合のみ続行してください。'
+      );
+      if (!ok) return;
+      gateway.abandonPending();
+    }
     state.busy = true;
     state.error = '';
     state.status = 'Googleの音楽生成AI（Lyria 3.5）で作曲しています（通常15〜45秒ほどかかります）…';
@@ -903,7 +984,10 @@ export function mountMusicStudio({
       state.selectedTrackId = track.id;
       state.status = `${label} を生成しました。下のプレーヤーで試聴やダウンロード、動画への合成ができます。`;
     } catch (err) {
-      state.error = err instanceof StudioError ? err.message : '音楽の生成を完了できませんでした。';
+      const baseMsg = err instanceof StudioError ? err.message : '音楽の生成を完了できませんでした。';
+      state.error = gateway.pendingJob
+        ? `${baseMsg}（結果未確認のためロック中：もう一度ボタンを押すと${gateway.pendingJob.id ? '同じ生成IDの再取得（新規課金なし）' : '確認終了'}を行えます）`
+        : baseMsg;
       state.status = '';
     } finally {
       state.busy = false;
@@ -1001,6 +1085,7 @@ export function mountMusicStudio({
     state.busy = false;
     state.status = '';
     state.error = '';
+    gateway.abandonPending();
     const audioEl = $('music-audio');
     if (audioEl) {
       audioEl.removeAttribute('src');
@@ -1011,5 +1096,12 @@ export function mountMusicStudio({
   }
 
   render();
-  return { gateway, state, render, reset };
+  return {
+    gateway,
+    state,
+    render,
+    reset,
+    hasWork: () => state.tracks.length > 0 || Boolean(gateway.pendingJob),
+    isBusy: () => state.busy,
+  };
 }

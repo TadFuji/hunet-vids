@@ -460,6 +460,7 @@ export class NarrationGateway {
     this.previewCache = new Map();
     this.customVoices = [];
     this.ephemeralVoiceKeys = [];
+    this.pendingJob = null;
   }
   key() {
     const k = typeof this.getApiKey === 'function' ? this.getApiKey() : this.getApiKey;
@@ -493,12 +494,50 @@ export class NarrationGateway {
       const terminal = [400, 401, 402, 403, 404, 413, 422, 429].includes(response.status);
       throw new StudioError(apiErrorMessage(safe), { terminal, uncertain: !terminal });
     }
-    return response.json();
+    try {
+      return await response.json();
+    } catch {
+      throw new StudioError('Google音声APIの応答を読み取れませんでした。', { uncertain: true });
+    }
+  }
+  abandonPending() {
+    this.pendingJob = null;
+  }
+  async resumePending(id = this.pendingJob?.id) {
+    const targetId = String(id || '').trim();
+    if (!targetId) throw new StudioError('再取得できる音声生成IDがありません。', { uncertain: true });
+    const leadSilence = this.pendingJob?.leadSilence || 0;
+    const trailSilence = this.pendingJob?.trailSilence || 0;
+    const json = await this.requestJson(`/v1beta/interactions/${encodeURIComponent(targetId)}`);
+    const b64 = extractAudioBase64(json);
+    if (!b64) {
+      if (['failed', 'cancelled', 'incomplete'].includes(json?.status)) {
+        this.pendingJob = null;
+        throw new StudioError('Google側で音声の生成が完了しませんでした。', { terminal: true });
+      }
+      throw new StudioError('Google音声APIから音声データをまだ取得できませんでした。', { uncertain: true });
+    }
+    this.pendingJob = null;
+    const rawBytes = base64ToBytes(b64);
+    return addSilenceToWav(rawBytes, leadSilence, trailSilence);
   }
   async synthesize(requestPayload, { leadSilence = 0, trailSilence = 0 } = {}) {
-    const json = await this.requestJson('/v1beta/interactions', { method: 'POST', body: requestPayload });
+    this.pendingJob = { id: null, leadSilence, trailSilence, uncertain: false };
+    let json;
+    try {
+      json = await this.requestJson('/v1beta/interactions', { method: 'POST', body: requestPayload });
+    } catch (err) {
+      if (err?.terminal) this.pendingJob = null;
+      else this.pendingJob = { id: null, leadSilence, trailSilence, uncertain: true };
+      throw err;
+    }
+    const interactionId = String(json?.id || '');
     const b64 = extractAudioBase64(json);
-    if (!b64) throw new StudioError('Google音声APIから音声データが返されませんでした。文章や設定を変えてお試しください。', { terminal: true });
+    if (!b64) {
+      this.pendingJob = null;
+      throw new StudioError('Google音声APIから音声データが返されませんでした。文章や設定を変えてお試しください。', { terminal: true });
+    }
+    this.pendingJob = null;
     const rawBytes = base64ToBytes(b64);
     return addSilenceToWav(rawBytes, leadSilence, trailSilence);
   }
@@ -617,7 +656,7 @@ export class NarrationGateway {
   }
 }
 
-export function mountNarrationStudio({ getApiKey, getStudio, getVideoElement, blobUrl, onUpdate, alertUser, keyRequiredMessage = 'Gemini の API キーを入力してください' } = {}) {
+export function mountNarrationStudio({ getApiKey, getStudio, getVideoElement, blobUrl, onUpdate, alertUser, confirmUser, keyRequiredMessage = 'Gemini の API キーを入力してください' } = {}) {
   const $ = id => document.getElementById(id);
   if (!$('narration-section')) return null;
 
@@ -941,8 +980,46 @@ export function mountNarrationStudio({ getApiKey, getStudio, getVideoElement, bl
 
   async function runSynthesize({ previewOnly = false } = {}) {
     const studio = typeof getStudio === 'function' ? getStudio() : null;
-    if (state.busy || studio?.busy) return;
+    if (state.busy || studio?.busy || studio?.job) return;
     if (!requireKey()) return;
+    if (gateway.pendingJob) {
+      if (gateway.pendingJob.id && !gateway.pendingJob.resumeAttempted) {
+        gateway.pendingJob.resumeAttempted = true;
+        state.busy = true;
+        state.error = '';
+        state.status = '直前のナレーション生成の結果を再取得しています（新規生成なし）…';
+        render();
+        try {
+          const result = await gateway.resumePending();
+          const clipId = `narration-${Date.now()}-${state.clips.length + 1}`;
+          const label = `[再取得] ${state.mode === 'dialogue' ? '2人の会話' : state.voiceName} (${result.durationSeconds.toFixed(1)}秒)`;
+          const clip = { id: clipId, label, blob: result.blob, durationSeconds: result.durationSeconds, mode: state.mode, voiceName: state.voiceName, previewOnly };
+          state.clips.unshift(clip);
+          state.selectedClipId = clip.id;
+          state.status = `${label} を再取得しました。`;
+          const audioEl = $('narration-audio');
+          if (audioEl && typeof blobUrl === 'function') audioEl.src = blobUrl(clip.blob);
+          return;
+        } catch (err) {
+          state.error = `${err instanceof StudioError ? err.message : 'ナレーションの再取得を完了できませんでした。'}（再度ボタンを押すと確認終了を選べます）`;
+          state.status = '';
+          return;
+        } finally {
+          state.busy = false;
+          render();
+          onUpdate?.();
+        }
+      }
+      const ask = typeof confirmUser === 'function'
+        ? confirmUser
+        : async (title, msg) => (typeof window !== 'undefined' && typeof window.confirm === 'function' ? window.confirm(`${title}\n\n${msg}`) : true);
+      const ok = await ask(
+        '結果未確認のナレーション生成を終了し、新規生成へ進みますか？',
+        '直前のナレーション生成通信が途中で中断されたため、Google側で処理や課金が続いている可能性があります。先の生成の取り消し・返金ではありません。利用状況を確認したうえで新しい有料リクエストを送る場合のみ続行してください。'
+      );
+      if (!ok) return;
+      gateway.abandonPending();
+    }
     state.busy = true;
     state.error = '';
     state.status = previewOnly ? '最初の約10秒のナレーションを試聴生成しています…' : 'ナレーション音声を生成しています…';
@@ -1001,7 +1078,10 @@ export function mountNarrationStudio({ getApiKey, getStudio, getVideoElement, bl
         audioEl.src = blobUrl(clip.blob);
       }
     } catch (err) {
-      state.error = err instanceof StudioError ? err.message : 'ナレーションの生成を完了できませんでした。';
+      const baseMsg = err instanceof StudioError ? err.message : 'ナレーションの生成を完了できませんでした。';
+      state.error = gateway.pendingJob
+        ? `${baseMsg}（結果未確認のためロック中：もう一度ボタンを押すと${gateway.pendingJob.id ? '同じ生成IDの再取得（新規課金なし）' : '確認終了'}を行えます）`
+        : baseMsg;
       state.status = '';
     } finally {
       state.busy = false;
@@ -1319,6 +1399,7 @@ export function mountNarrationStudio({ getApiKey, getStudio, getVideoElement, bl
     gateway.previewCache.clear();
     gateway.ephemeralVoiceKeys = [];
     gateway.customVoices = [];
+    gateway.abandonPending();
     const audioEl = $('narration-audio');
     if (audioEl) {
       audioEl.removeAttribute('src');
@@ -1335,5 +1416,12 @@ export function mountNarrationStudio({ getApiKey, getStudio, getVideoElement, bl
   }
 
   render();
-  return { gateway, state, render, reset };
+  return {
+    gateway,
+    state,
+    render,
+    reset,
+    hasWork: () => state.clips.length > 0 || gateway.customVoices.length > 0 || Boolean(gateway.pendingJob),
+    isBusy: () => state.busy,
+  };
 }

@@ -375,12 +375,13 @@ $('abandon').addEventListener('click', async () => {
     studio.abandon();
   }
 });
+const hasSessionWork = () => Boolean(studio.hasWork || narrationUi?.hasWork?.() || musicUi?.hasWork?.());
 $('reset').addEventListener('click', async () => {
-  if (studio.busy || studio.job) return;
-  if (studio.hasWork && !await confirmAction('新しい物語を始める', 'このタブの動画と確認用の出力、履歴、APIキーを消去します。必要な動画と診断情報は先に保存してください。Google側の履歴は消えません。')) return;
+  if (studio.busy || studio.job || narrationUi?.isBusy?.() || musicUi?.isBusy?.()) return;
+  if (hasSessionWork() && !await confirmAction('新しい物語を始める', 'このタブの動画・ナレーション音声・生成音楽と確認用の出力、履歴、APIキーを消去します。必要な動画・音声・診断情報は先に保存してください。Google側の履歴は消えません。')) return;
   apiKey = ''; $('api-key').value = ''; newStudio();
 });
-window.addEventListener('beforeunload', event => { if (studio.hasWork) { event.preventDefault(); event.returnValue = ''; } });
+window.addEventListener('beforeunload', event => { if (hasSessionWork()) { event.preventDefault(); event.returnValue = ''; } });
 window.addEventListener('pagehide', () => { browserMedia?.dispose(); apiKey = ''; $('api-key').value = ''; clearUrls(); narrationUi?.reset?.(); musicUi?.reset?.(); });
 window.addEventListener('pageshow', event => {
   if (event.persisted) { apiKey = ''; newStudio(); studio.notice = '画面を再開したため、セッションを初期化しました。必要なキーはご本人が改めて入力してください。'; render(); }
@@ -393,6 +394,7 @@ if (typeof mountNarrationStudio === 'function') {
     blobUrl,
     onUpdate: render,
     alertUser: msg => window.alert(msg),
+    confirmUser: (title, text) => confirmAction(title, text, true),
     keyRequiredMessage: KEY_REQUIRED_MESSAGE,
   });
 }
@@ -404,6 +406,7 @@ if (typeof mountMusicStudio === 'function') {
     blobUrl,
     onUpdate: render,
     alertUser: msg => window.alert(msg),
+    confirmUser: (title, text) => confirmAction(title, text, true),
     keyRequiredMessage: KEY_REQUIRED_MESSAGE,
   });
 }
